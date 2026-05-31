@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash .claude/hooks/session-start.sh)",
+      "Bash(bash .claude/hooks/stop.sh)"
+    ]
+  }
+}
