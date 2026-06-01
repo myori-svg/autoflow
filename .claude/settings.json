@@ -1,4 +1,12 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(gh issue *)",
+      "Bash(gh label *)",
+      "Bash(git -C /Users/myori/Public/workspace/autoflow add .claude/commands/issue-start.md .claude/settings.json)",
+      "Bash(git -C /Users/myori/Public/workspace/autoflow status)"
+    ]
+  },
   "hooks": {
     "SessionStart": [
       {
