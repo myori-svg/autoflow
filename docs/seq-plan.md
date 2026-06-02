@@ -19,15 +19,15 @@ depends_on: 없음
 브랜치: feature/todo-input → dev
 depends_on: Chunk 1
 
-- [ ] #1 [1.1.1] 할일 제목 입력 필드 UI
+- [x] #1 [1.1.1] 할일 제목 입력 필드 UI
       depends_on: 없음 / blocks: #2
-- [ ] #3 [1.2.1] 캘린더 피커 컴포넌트 구현
+- [x] #3 [1.2.1] 캘린더 피커 컴포넌트 구현
       depends_on: 없음 / blocks: #4
-- [ ] #2 [1.1.2] 할일 제목 입력값 저장
+- [x] #2 [1.1.2] 할일 제목 입력값 저장
       depends_on: #1 / blocks: 없음
-- [ ] #4 [1.2.2] 마감일 선택 저장
+- [x] #4 [1.2.2] 마감일 선택 저장
       depends_on: #3 / blocks: #5
-- [ ] #5 [1.2.3] 마감일 유효성 검사
+- [x] #5 [1.2.3] 마감일 유효성 검사
       depends_on: #3, #4 / blocks: 없음
 
 ---
