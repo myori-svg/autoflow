@@ -1,10 +1,9 @@
-import { useState } from 'react'
 import { DatePicker } from './components/DatePicker'
 import { TaskInput } from './components/TaskInput'
+import { useTaskForm } from './hooks/useTaskForm'
 
 function App() {
-  const [title, setTitle] = useState('')
-  const [deadline, setDeadline] = useState<Date | undefined>()
+  const { title, deadline, setTitle, setDeadline } = useTaskForm()
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-start justify-center pt-16 px-4">
