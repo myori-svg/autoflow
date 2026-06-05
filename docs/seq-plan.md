@@ -36,7 +36,7 @@ depends_on: Chunk 1
 브랜치: feature/gemini-api → dev
 depends_on: Chunk 2
 
-- [ ] #6 [2.1.1] Gemini API 클라이언트 설정
+- [x] #6 [2.1.1] Gemini API 클라이언트 설정
       depends_on: 없음 / blocks: #7
 - [ ] #7 [2.1.2] 소요시간 추정 프롬프트 설계
       depends_on: #6 / blocks: #8
