@@ -15,7 +15,7 @@ depends_on: 없음
 
 ---
 
-## Chunk 2 — 할일 입력 UI (⏳ 대기)
+## Chunk 2 — 할일 입력 UI (✅ 완료)
 브랜치: feature/todo-input → dev
 depends_on: Chunk 1
 
