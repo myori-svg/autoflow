@@ -30,7 +30,17 @@ gh issue list --label "in-progress"
 ```
 출력 후 종료.
 
-→ 있으면: 미완료 청크 확인 후 첫 번째 미완료 청크의 첫 번째 이슈로 자동 진행.
+→ 있으면: 미완료 청크 확인
+    → 미완료 청크 있으면: 첫 번째 미완료 청크의 첫 번째 이슈로 자동 진행
+    → 미완료 청크 없으면 (seq-plan 전체 완료):
+        ```
+        ✅ 모든 청크가 완료됐습니다!
+
+        다음 할 일을 선택해 주세요:
+        1. 새 기능 추가   → /seq-plan patch
+        2. 새 Milestone 계획 → /seq-plan {번호}
+        3. 종료
+        ```
 
 ---
 
@@ -50,23 +60,32 @@ gh issue list --label "in-progress"
 
 ---
 
-### Step 3 — 다음 Milestone
+### Step 3 — 완료 후 안내
 
-모든 청크 완료 시:
-```
-✅ Milestone [{Milestone명}] 완료!
-
-다음 Milestone:
-- {다음 Milestone명}
-
-/seq-plan {다음 Milestone번호} 로 계획을 먼저 세워주세요.
-```
+모든 청크 완료 시 Step 0의 "미완료 청크 없으면" 분기로 위임.
 
 ---
 
 ### Step 4 — 세션 종료
 
-현재 in-progress 이슈 paused 처리:
+**0. 미머지 PR 체크**
+```bash
+BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+gh pr list --head "$BRANCH" --state open --json number,title,url
+```
+열린 PR 있으면:
+```
+⚠️ 미머지 PR이 있습니다!
+
+PR #{번호} [{제목}]
+🔗 {URL}
+
+지금 머지할까요? (y/n)
+```
+- y → `gh pr merge {번호} --merge --delete-branch` 실행
+- n → "나중에 직접 머지해주세요." 경고 출력
+
+**1. 현재 in-progress 이슈 paused 처리**
 ```bash
 BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
 ISSUE=$(echo "$BRANCH" | grep -oE '#[0-9]+' | tr -d '#' | head -1)

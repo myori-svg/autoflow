@@ -85,13 +85,17 @@ gh issue view {이슈번호}
 ---
 
 ### Step 3 — 브랜치 생성 (자동)
-Milestone 단위 브랜치 생성 or 체크아웃:
-- 있으면 체크아웃만
-- 없으면 생성
+`docs/seq-plan.md`에서 현재 이슈가 속한 청크의 브랜치명 읽기.
+브랜치명 형식: `feature/{기능명-kebab}` (예: feature/todo-input, feature/calendar-view)
+
+- 브랜치 있으면 체크아웃만:
 ```bash
-git checkout -b feature/{milestone-kebab-case}
-# 또는
-git checkout feature/{milestone-kebab-case}
+git checkout feature/{기능명}
+```
+- 없으면 dev 기준으로 생성 후 체크아웃:
+```bash
+git checkout dev && git pull origin dev
+git checkout -b feature/{기능명}
 ```
 
 체크아웃 후 기존 브랜치면 `"기존 브랜치로 전환했습니다."` 를 결과에 포함.
@@ -229,37 +233,125 @@ git push origin {현재 브랜치명}
 
 ---
 
-### Step 11 — PR 생성 (자동)
+<<<<<<< Updated upstream
+### Step 11 — PR 생성 + 머지 승인 요청 ⚠️
+
+PR 생성:
 ```bash
 gh pr create \
   --title "[Chunk {n}] {청크 이름}" \
-  --body "## 구현 내용\n{청크 내 완료된 이슈 목록}\n\n## 관련 이슈\n{Closes #1\nCloses #2\n...}" \
+=======
+### Step 11 — PR 생성 (자동)
+
+```bash
+gh pr create \
+  --title "✨ feat: {청크 한줄 요약} (#{이슈번호들})" \
+>>>>>>> Stashed changes
+  --body "$(cat <<'PRBODY'
+## 개요
+
+{이 청크에서 해결하려는 문제와 구현 범위 한 줄 요약}
+
+## 구현 내용
+
+| 이슈 | 제목 | 구현 방법 |
+|------|------|-----------|
+| #{n} | {이슈 제목} | {핵심 구현 방식 한 줄} |
+
+## 주요 설계 결정
+
+- **{결정 항목}**: {선택한 이유 — 대안 대비 장점}
+<<<<<<< Updated upstream
+- **{결정 항목}**: {선택한 이유}
+=======
+>>>>>>> Stashed changes
+
+## 주목할 점
+
+- {리뷰어가 집중해서 봐야 할 로직이나 구조}
+- {잠재적 엣지 케이스 또는 알려진 한계}
+<<<<<<< Updated upstream
+- {향후 확장 시 고려할 부분}
+
+## 변경 파일 요약
+
+- `{파일경로}` — {역할}
+
+## 관련 이슈
+
+{Closes #1}
+{Closes #2}
+=======
+
+## 변경 파일 요약
+
+\`\`\`
+{디렉토리 트리 + 각 파일 역할 한 줄}
+\`\`\`
+
+## 관련 이슈
+
+Closes #{n}
+>>>>>>> Stashed changes
+PRBODY
+)" \
   --base dev \
   --head {현재 브랜치명}
 ```
 
+<<<<<<< Updated upstream
+PR 생성 후 머지 승인 요청:
+```
+✅ PR 생성 완료
+🔗 PR: {PR URL}
+
+PR 내용을 확인하고 머지할까요? (y/n)
+```
+- y → 아래 실행:
+```bash
+gh pr merge {PR번호} --merge --delete-branch
+git checkout dev
+git pull origin dev
+```
+  머지 완료 후 Step 12 진행
+- n → "나중에 직접 머지해주세요." 출력 후 Step 12 진행
+=======
+PR 생성 후:
+```
+✅ PR 생성 완료
+🔗 {PR URL}
+
+PR 내용을 확인하고 머지할까요? (y/n)
+```
+- y → `gh pr merge {번호} --merge --delete-branch` 후 `git checkout dev && git pull origin dev`
+- n → "나중에 직접 머지해주세요." 출력
+>>>>>>> Stashed changes
+
 ---
 
 ### Step 12 — 다음 청크 확인 → 승인 요청 ⚠️
+
+다음 청크 있으면:
 ```
 ✅ Chunk {n} [{청크 이름}] 완료
 🔗 PR: {PR URL}
 
 다음 청크:
 - Chunk {n+1} — {청크 이름}
-  - #3 [1.2.1] 마감일 캘린더 피커 UI
-  - #4 [1.2.2] 마감일 입력값 저장
+  - #{이슈번호} [{ID}] {이슈 제목}
 
 다음 청크 시작할까요? (y/n)
 ```
 y 입력 시 다음 청크 첫 번째 이슈로 Step 2 재시작.
 
-Milestone 내 모든 청크 완료 시:
+모든 청크 완료 시:
+1. `docs/seq-plan.md` 헤더의 `상태: 진행 중` → `상태: 완료` 로 업데이트
+2. 아래 출력:
 ```
-✅ Milestone [{Milestone명}] 완료!
+✅ 모든 청크가 완료됐습니다!
 
-다음 Milestone:
-- {다음 Milestone명}
-
-/seq-plan {다음 Milestone번호} 로 계획을 먼저 세워주세요.
+다음 할 일을 선택해 주세요:
+1. 새 기능 추가   → /seq-plan patch
+2. 새 Milestone 계획 → /seq-plan {번호}
+3. 종료
 ```

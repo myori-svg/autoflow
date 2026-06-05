@@ -1,145 +1,110 @@
 # issue-start
 
-사용법: `/issue-start {이슈번호}`
+이슈 번호를 받아 브랜치를 생성하고 GitHub 이슈를 in-progress 상태로 전환하는 커맨드.
 
-아래 순서대로 자율적으로 진행해. **승인 요청 표시된 곳에서만 멈추고 나머지는 자동으로 진행.**
+## 사용법
 
----
-
-### Step 1 — 이슈 읽기 (자동)
-```bash
-gh issue view $ARGUMENTS
 ```
-이슈 제목, 수용 기준, Milestone 파악.
+/issue-start {이슈번호}
+```
+
+예시: `/issue-start 23`
 
 ---
 
-### Step 2 — 브랜치 생성 (자동)
+## 실행 절차
+
+`$ARGUMENTS`를 이슈 번호로 사용해. 아래 순서를 정확히 따라:
+
+### Step 0 — 입력 검증
+
+`$ARGUMENTS`가 비어있거나 숫자가 아니면:
+```
+사용법: /issue-start {이슈번호}
+예시: /issue-start 23
+```
+출력 후 종료.
+
+---
+
+### Step 1 — 이슈 정보 조회
+
+아래 두 커맨드를 실행해 제목과 Milestone을 각각 가져와:
+
 ```bash
-git checkout -b feature/#$ARGUMENTS-{이슈제목-kebab-case}
+gh issue view $ARGUMENTS --json title --template '{{.title}}'
+gh issue view $ARGUMENTS --json milestone --template '{{if .milestone}}{{.milestone.title}}{{else}}없음{{end}}'
+```
+
+조회 실패 시: `"이슈 #$ARGUMENTS 를 찾을 수 없습니다."` 출력 후 종료.
+
+---
+
+### Step 2 — 제목을 kebab-case로 변환
+
+조회한 제목을 아래 규칙으로 변환해:
+1. 소문자로 변환
+2. 영문, 숫자 이외의 문자(한글, 특수문자 등)는 공백으로 대체
+3. 공백 → 하이픈
+4. 연속 하이픈 → 단일 하이픈
+5. 앞뒤 하이픈 제거
+
+예시:
+- `[1.1.1] 할일 제목 입력 필드 UI 구현` → `1-1-1-ui`
+- `Add Todo Input Form UI` → `add-todo-input-form-ui`
+- `Fix: 캘린더 API 연동 버그` → `fix-api`
+
+변환 결과가 비어있으면 `feature` 를 fallback으로 사용.
+
+---
+
+### Step 3 — 브랜치 생성 및 체크아웃
+
+브랜치명 형식: `feature/#$ARGUMENTS-{변환된제목}`
+
+```bash
+git checkout -b feature/#$ARGUMENTS-{변환된제목}
+```
+
+브랜치가 이미 존재해서 실패한 경우:
+```bash
+git checkout feature/#$ARGUMENTS-{변환된제목}
+```
+체크아웃 후 `"기존 브랜치로 전환했습니다."` 를 결과에 포함.
+
+---
+
+### Step 4 — in-progress 라벨 추가
+
+```bash
+gh issue edit $ARGUMENTS --add-label "in-progress"
+```
+
+라벨이 없어서 실패하면 먼저 생성 후 재시도:
+```bash
+gh label create "in-progress" --color "0075ca" --description "작업 진행 중" --force
 gh issue edit $ARGUMENTS --add-label "in-progress"
 ```
 
 ---
 
-### Step 3 — 리스크 판단 + 구현 계획 (조건부 자동)
+### Step 5 — 결과 출력
 
-#### 리스크 기준
-
-**🟢 낮음** (자동 진행):
-- 새 파일 생성
-- UI 컴포넌트 추가
-- 단순 CRUD 구현
-
-**🟡 보통** (계획 출력 후 자동 진행):
-- 기존 파일 수정
-- API 연동
-- 상태 관리 변경
-
-**🔴 높음** (승인 요청 후 진행):
-- DB 스키마 변경
-- 기존 로직 대규모 수정
-- 여러 파일에 걸친 리팩토링
-- 외부 API 키 관련 작업
-- 컴포넌트 계층 구조 변경 (props drilling 발생 가능성)
-- 새로운 아키텍처 패턴 도입
-- 3개 이상 컴포넌트에 영향을 미치는 상태 변경
-- 공통 훅/유틸 신규 생성
-
----
-
-#### 설계 체크 (자동 분석, 영향받는 파일 기준으로 범위 결정)
-
-**client/ 파일 포함 시 → React 체크**
-- Props drilling 발생 여부 (2단계 이상이면 🔴)
-- 영향받는 컴포넌트 수 (3개 이상이면 🔴)
-- useEffect 의존성 배열 누락 또는 과다 선언
-- 컴포넌트 200줄 이상 (분리 필요 신호 → 🔴)
-- 비즈니스 로직이 컴포넌트 안에 있는지 (커스텀 훅 분리 필요 → 🔴)
-- key prop 누락 또는 index를 key로 사용
-- try/catch 없는 fetch 호출
-
-**server/ 파일 포함 시 → Express 체크**
-- routes에 비즈니스 로직 직접 작성 여부 (routes → controllers → services 분리 위반 → 🔴)
-- 에러 미들웨어 없이 에러 처리
-- 환경변수 하드코딩 여부 (🔴)
-- MongoDB 쿼리에 사용자 입력 직접 삽입 여부 (🔴)
-- try/catch 없는 async 함수
-
-**공통 체크 (모든 파일)**
-- API 키 코드에 직접 노출 (🔴)
-- CORS 설정 * 로 전체 허용 (🔴)
-- 함수 단일 책임 원칙 위반 (너무 많은 역할)
-- 중복 코드 3번 이상 반복 (공통 함수 분리 신호)
-- 매직 넘버/문자열 상수화 안 된 경우
-- 기존 아키텍처(CLAUDE.md 기준)와 충돌 여부 (🔴)
-
----
-
-#### 출력 형식
+아래 형식으로 출력 (Milestone이 없으면 해당 줄 생략):
 
 ```
-## 구현 계획 — #$ARGUMENTS
-
-리스크: 🟢 낮음 / 🟡 보통 / 🔴 높음
-판단 근거: (한 줄 설명)
-
-### 설계 체크 결과
-- [client] useEffect deps: ✅ 이상 없음
-- [server] routes 분리: ⚠️ controller 분리 필요
-- [공통] 매직 넘버: ✅ 이상 없음
-
-### 생성/수정할 파일
-- `파일경로` — 역할 설명
-
-### 구현 순서
-1. ...
-2. ...
+✅ 작업 시작
+브랜치: feature/#23-1-1-1-ui
+이슈: #23 — [1.1.1] 할일 제목 입력 필드 UI 구현
+Milestone: 1. 할일 입력 및 마감일 설정
+상태: in-progress
 ```
 
-- 🟢 → 바로 Step 4 진행
-- 🟡 → 계획 출력 후 자동으로 Step 4 진행
-- 🔴 → "승인하시겠습니까? (y/n)" 대기 후 진행
-
----
-
-### Step 4 — 코드 구현 (자동)
-CLAUDE.md 코딩 컨벤션 준수하며 구현.
-구현 중 막히면 스스로 해결하고 계속 진행.
-
----
-
-### Step 5 — 검증 (자동)
-1. `npm run lint` 실행 → 오류 있으면 자동 수정 후 재실행
-2. 이슈의 수용 기준 항목 하나씩 체크:
+기존 브랜치로 전환한 경우:
 ```
-✅ 1. 할일 제목 입력 필드 제공
-✅ 2. 최대 100자 제한
-❌ 3. 실시간 유효성 검사 → 자동 수정 후 재체크
+✅ 작업 재개 (기존 브랜치로 전환했습니다.)
+브랜치: feature/#23-1-1-1-ui
+이슈: #23 — [1.1.1] 할일 제목 입력 필드 UI 구현
+Milestone: 1. 할일 입력 및 마감일 설정
+상태: in-progress
 ```
-모든 항목 ✅ 될 때까지 자동 반복.
-
----
-
-### Step 6 — 커밋 (자동)
-.gitmessage 형식에 맞춰 커밋 메시지 작성 후 자동 커밋.
-마지막 줄에 `Closes #$ARGUMENTS` 포함.
-push는 하지 말 것.
-
----
-
-### Step 7 — 다음 이슈 확인 → 승인 요청 ⚠️
-```bash
-gh issue list --milestone "{현재 Milestone}" --state open
-```
-다음 이슈 목록 보여주고 물어보기:
-```
-✅ #$ARGUMENTS 완료
-
-다음 이슈 목록:
-- #24 [1.1.2] 할일 제목 입력값 저장
-- #25 [1.2.1] 마감일 캘린더 피커 UI
-
-다음 이슈 진행할까요? 번호를 입력해주세요. (건너뛰려면 n)
-```
-번호 입력받으면 Step 1부터 재시작.
