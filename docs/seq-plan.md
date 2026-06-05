@@ -38,7 +38,7 @@ depends_on: Chunk 2
 
 - [x] #6 [2.1.1] Gemini API 클라이언트 설정
       depends_on: 없음 / blocks: #7
-- [ ] #7 [2.1.2] 소요시간 추정 프롬프트 설계
+- [x] #7 [2.1.2] 소요시간 추정 프롬프트 설계
       depends_on: #6 / blocks: #8
 - [ ] #8 [2.2.1] 일정 자동 배분 로직
       depends_on: #7 / blocks: 없음
