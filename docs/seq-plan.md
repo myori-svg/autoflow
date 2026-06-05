@@ -45,13 +45,13 @@ depends_on: Chunk 2
 
 ---
 
-## Chunk 4 — 캘린더 뷰 (⏳ 대기)
+## Chunk 4 — 캘린더 뷰 (✅ 완료)
 브랜치: feature/calendar-view → dev
 depends_on: Chunk 3
 
-- [ ] #14 [3.1.1] 주간 캘린더 레이아웃 구현
+- [x] #14 [3.1.1] 주간 캘린더 레이아웃 구현
       depends_on: 없음 / blocks: #15
-- [ ] #15 [3.1.2] 주간 네비게이션
+- [x] #15 [3.1.2] 주간 네비게이션
       depends_on: #14 / blocks: 없음
-- [ ] #22 [3.4.2] 캘린더 UI 즉시 반영
+- [ ] #22 [3.4.2] 캘린더 UI 즉시 반영 ← SKIPPED (POST /api/tasks 미구현, 추후 재오픈)
       depends_on: #14 / blocks: 없음
