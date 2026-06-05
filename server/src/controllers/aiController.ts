@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express'
+import { buildFeedbackContext, getFeedbackStats } from '../services/feedback'
 import { estimateTaskDuration } from '../services/gemini'
 
 export async function estimateHandler(req: Request, res: Response): Promise<void> {
@@ -20,7 +21,10 @@ export async function estimateHandler(req: Request, res: Response): Promise<void
   }
 
   try {
-    const result = await estimateTaskDuration({ title: title.trim(), description, importance, deadline })
+    const stats = await getFeedbackStats()
+    const feedbackContext = stats ? buildFeedbackContext(stats) : undefined
+
+    const result = await estimateTaskDuration({ title: title.trim(), description, importance, deadline, feedbackContext })
     res.json(result)
   } catch (err) {
     const message = err instanceof Error ? err.message : '알 수 없는 오류'

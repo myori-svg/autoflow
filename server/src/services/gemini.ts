@@ -5,6 +5,7 @@ type EstimateInput = {
   description?: string
   importance?: 'low' | 'medium' | 'high'
   deadline: string
+  feedbackContext?: string
 }
 
 type EstimateResult = {
@@ -21,7 +22,7 @@ const PROMPT_TEMPLATE = (input: EstimateInput) => `
 - 중요도: ${input.importance ?? 'medium'}
 - 마감일: ${input.deadline}
 - 현재 날짜: ${new Date().toISOString().split('T')[0]}
-
+${input.feedbackContext ? `\n사용자 패턴:\n- ${input.feedbackContext}` : ''}
 반드시 아래 JSON 형식으로만 응답하세요. 다른 텍스트는 포함하지 마세요:
 {
   "estimatedHours": <숫자, 소수점 1자리까지>,

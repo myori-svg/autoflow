@@ -3,6 +3,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import { connectDB } from './services/db'
 import aiRouter from './routes/ai'
+import feedbackRouter from './routes/feedback'
 
 dotenv.config()
 
@@ -17,6 +18,7 @@ app.get('/health', (_req, res) => {
 })
 
 app.use('/api/ai', aiRouter)
+app.use('/api/feedback', feedbackRouter)
 
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err.stack)
