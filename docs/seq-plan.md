@@ -32,7 +32,7 @@ depends_on: Chunk 1
 
 ---
 
-## Chunk 3 — Gemini API 연동 (⏳ 대기)
+## Chunk 3 — Gemini API 연동 (✅ 완료)
 브랜치: feature/gemini-api → dev
 depends_on: Chunk 2
 
@@ -40,7 +40,7 @@ depends_on: Chunk 2
       depends_on: 없음 / blocks: #7
 - [x] #7 [2.1.2] 소요시간 추정 프롬프트 설계
       depends_on: #6 / blocks: #8
-- [ ] #8 [2.2.1] 일정 자동 배분 로직
+- [x] #8 [2.2.1] 일정 자동 배분 로직
       depends_on: #7 / blocks: 없음
 
 ---
