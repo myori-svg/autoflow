@@ -53,5 +53,38 @@ depends_on: Chunk 3
       depends_on: 없음 / blocks: #15
 - [x] #15 [3.1.2] 주간 네비게이션
       depends_on: #14 / blocks: 없음
-- [ ] #22 [3.4.2] 캘린더 UI 즉시 반영 ← SKIPPED (POST /api/tasks 미구현, 추후 재오픈)
+- [x] #22 [3.4.2] 캘린더 UI 즉시 반영 ← GitHub상 closed 확인됨 (이전 SKIPPED 메모와 불일치, 구현 여부 재확인 필요)
       depends_on: #14 / blocks: 없음
+
+---
+
+## Chunk 5 — 드래그 앤 드롭 일정 조정 (⏳ 대기)
+브랜치: feature/drag-drop-schedule → dev
+depends_on: Chunk 4
+
+- [ ] #16 [3.2.1] 드래그 앤 드롭 감지
+      depends_on: 없음 / blocks: #17
+- [ ] #17 [3.2.3] 드롭 후 시간 계산 및 저장
+      depends_on: #16 / blocks: #18, #21
+- [ ] #18 [3.2.4] 충돌 감지 및 경고
+      depends_on: #17 / blocks: 없음
+
+---
+
+## Chunk 6 — 할일 상세 편집 (⏳ 대기)
+브랜치: feature/task-detail-edit → dev
+depends_on: Chunk 4 (Chunk 5와 병렬 진행 가능)
+
+- [ ] #19 [3.3.1] 할일 블록 클릭 감지
+      depends_on: 없음 / blocks: #20
+- [ ] #20 [3.3.2] 세부 정보 편집 폼
+      depends_on: #19 / blocks: #21
+
+---
+
+## Chunk 7 — 실시간 데이터 동기화 (⏳ 대기)
+브랜치: feature/realtime-sync → dev
+depends_on: Chunk 5, Chunk 6
+
+- [ ] #21 [3.4.1] 실시간 데이터 동기화
+      depends_on: #17, #20 / blocks: 없음
