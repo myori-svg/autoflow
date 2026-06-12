@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import express from "express";
 import aiRouter from "./routes/ai";
 import feedbackRouter from "./routes/feedback";
+import taskRouter from "./routes/tasks";
 import { connectDB } from "./services/db";
 
 dotenv.config();
@@ -19,6 +20,7 @@ app.get("/health", (_req, res) => {
 
 app.use("/api/ai", aiRouter);
 app.use("/api/feedback", feedbackRouter);
+app.use("/api/tasks", taskRouter);
 
 app.use(
 	(
