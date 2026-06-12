@@ -58,11 +58,11 @@ depends_on: Chunk 3
 
 ---
 
-## Chunk 5 — 드래그 앤 드롭 일정 조정 (⏳ 대기)
+## Chunk 5 — 드래그 앤 드롭 일정 조정 (🟡 진행 중)
 브랜치: feature/drag-drop-schedule → dev
 depends_on: Chunk 4
 
-- [ ] #16 [3.2.1] 드래그 앤 드롭 감지
+- [x] #16 [3.2.1] 드래그 앤 드롭 감지
       depends_on: 없음 / blocks: #17
 - [ ] #17 [3.2.3] 드롭 후 시간 계산 및 저장
       depends_on: #16 / blocks: #18, #21
