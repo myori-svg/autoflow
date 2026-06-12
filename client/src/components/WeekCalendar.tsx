@@ -1,11 +1,19 @@
 import FullCalendar from '@fullcalendar/react'
+import type { EventDropArg } from '@fullcalendar/core'
+import interactionPlugin from '@fullcalendar/interaction'
 import timeGridPlugin from '@fullcalendar/timegrid'
+import type { ScheduledTask } from '../types'
 
-export function WeekCalendar() {
+type WeekCalendarProps = {
+  events: ScheduledTask[]
+  onEventDrop: (arg: EventDropArg) => void
+}
+
+export function WeekCalendar({ events, onEventDrop }: WeekCalendarProps) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
       <FullCalendar
-        plugins={[timeGridPlugin]}
+        plugins={[timeGridPlugin, interactionPlugin]}
         initialView="timeGridWeek"
         headerToolbar={{
           left: 'prev,next today',
@@ -22,6 +30,12 @@ export function WeekCalendar() {
         weekends={true}
         titleFormat={{ year: 'numeric', month: '2-digit', day: '2-digit' }}
         buttonText={{ today: '오늘', prev: '‹', next: '›' }}
+        events={events}
+        editable={true}
+        eventStartEditable={true}
+        eventDurationEditable={false}
+        longPressDelay={200}
+        eventDrop={onEventDrop}
       />
     </div>
   )
