@@ -64,12 +64,10 @@ depends_on: Chunk 4
 
 - [x] #16 [3.2.1] 드래그 앤 드롭 감지
       depends_on: 없음 / blocks: #17
-- [ ] #17 [3.2.3] 드롭 후 시간 계산 및 위치 갱신
-      depends_on: #16 / blocks: #46, #18, #21
-- [ ] #46 [3.2.3b] 일정 변경 사항 DB 저장
-      depends_on: #17 / blocks: #18, #21
+- [ ] #17 [3.2.3] 드롭 후 변경된 일정 DB 저장
+      depends_on: #16 / blocks: #18, #21
 - [ ] #18 [3.2.4] 충돌 감지 및 경고
-      depends_on: #46 / blocks: 없음
+      depends_on: #17 / blocks: 없음
 
 ---
 
@@ -89,4 +87,4 @@ depends_on: Chunk 4 (Chunk 5와 병렬 진행 가능)
 depends_on: Chunk 5, Chunk 6
 
 - [ ] #21 [3.4.1] 실시간 데이터 동기화
-      depends_on: #46, #20 / blocks: 없음
+      depends_on: #17, #20 / blocks: 없음
