@@ -1,8 +1,8 @@
-import { Router } from 'express'
-import { saveFeedbackHandler } from '../controllers/feedbackController'
+import { Router } from "express";
+import { saveFeedbackHandler } from "../controllers/feedbackController";
 
-const router = Router()
+const router = Router();
 
-router.post('/', saveFeedbackHandler)
+router.post("/", saveFeedbackHandler);
 
-export default router
+export default router;

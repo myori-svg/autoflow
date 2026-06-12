@@ -1,8 +1,8 @@
-import { Router } from 'express'
-import { estimateHandler } from '../controllers/aiController'
+import { Router } from "express";
+import { estimateHandler } from "../controllers/aiController";
 
-const router = Router()
+const router = Router();
 
-router.post('/estimate', estimateHandler)
+router.post("/estimate", estimateHandler);
 
-export default router
+export default router;
