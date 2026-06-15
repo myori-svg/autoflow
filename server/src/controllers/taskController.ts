@@ -1,50 +1,86 @@
 import type { Request, Response } from "express";
-import { createTask, listTasks, updateTaskSchedule } from "../services/task";
+import { TASK_PRIORITIES, type TaskPriority } from "../models/Task";
+import { createTask, listTasks, updateTask } from "../services/task";
 
-function parseSchedule(body: unknown): {
+type ParsedTaskFields = {
 	title?: string;
+	description?: string;
+	priority?: TaskPriority;
 	start?: Date;
 	end?: Date;
-	error?: string;
-} {
-	const { title, start, end } = body as {
+};
+
+function parseTaskFields(body: unknown): ParsedTaskFields | { error: string } {
+	const { title, description, priority, start, end } = body as {
 		title?: string;
+		description?: string;
+		priority?: string;
 		start?: string;
 		end?: string;
 	};
 
-	if (start === undefined || end === undefined) {
-		return { error: "start와 end는 필수입니다." };
+	const fields: ParsedTaskFields = {};
+
+	if (title !== undefined) fields.title = title;
+	if (description !== undefined) fields.description = description;
+
+	if (priority !== undefined) {
+		if (!TASK_PRIORITIES.includes(priority as TaskPriority)) {
+			return { error: "priority는 low, medium, high 중 하나여야 합니다." };
+		}
+		fields.priority = priority as TaskPriority;
 	}
 
-	const startDate = new Date(start);
-	const endDate = new Date(end);
-
-	if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
-		return { error: "start와 end는 유효한 날짜여야 합니다." };
+	if (start !== undefined) {
+		const startDate = new Date(start);
+		if (Number.isNaN(startDate.getTime())) {
+			return { error: "start는 유효한 날짜여야 합니다." };
+		}
+		fields.start = startDate;
 	}
 
-	return { title, start: startDate, end: endDate };
+	if (end !== undefined) {
+		const endDate = new Date(end);
+		if (Number.isNaN(endDate.getTime())) {
+			return { error: "end는 유효한 날짜여야 합니다." };
+		}
+		fields.end = endDate;
+	}
+
+	return fields;
 }
 
 export async function createTaskHandler(
 	req: Request,
 	res: Response,
 ): Promise<void> {
-	const { title, start, end, error } = parseSchedule(req.body);
+	const parsed = parseTaskFields(req.body);
 
-	if (!title || typeof title !== "string" || title.trim().length === 0) {
+	if ("error" in parsed) {
+		res.status(400).json({ error: parsed.error });
+		return;
+	}
+
+	const { title, description, priority, start, end } = parsed;
+
+	if (!title || title.trim().length === 0) {
 		res.status(400).json({ error: "할일 제목은 필수입니다." });
 		return;
 	}
 
-	if (error || !start || !end) {
-		res.status(400).json({ error });
+	if (!start || !end) {
+		res.status(400).json({ error: "start와 end는 필수입니다." });
 		return;
 	}
 
 	try {
-		const task = await createTask({ title: title.trim(), start, end });
+		const task = await createTask({
+			title: title.trim(),
+			description,
+			priority,
+			start,
+			end,
+		});
 		res.status(201).json(task);
 	} catch (err) {
 		const message = err instanceof Error ? err.message : "알 수 없는 오류";
@@ -69,16 +105,24 @@ export async function updateTaskHandler(
 	req: Request,
 	res: Response,
 ): Promise<void> {
-	const { start, end, error } = parseSchedule(req.body);
+	const parsed = parseTaskFields(req.body);
 
-	if (error || !start || !end) {
-		res.status(400).json({ error });
+	if ("error" in parsed) {
+		res.status(400).json({ error: parsed.error });
+		return;
+	}
+
+	if (parsed.title !== undefined && parsed.title.trim().length === 0) {
+		res.status(400).json({ error: "할일 제목은 필수입니다." });
 		return;
 	}
 
 	try {
 		const id = String(req.params.id);
-		const task = await updateTaskSchedule(id, { start, end });
+		const task = await updateTask(id, {
+			...parsed,
+			title: parsed.title?.trim(),
+		});
 		if (!task) {
 			res.status(404).json({ error: "해당 할일을 찾을 수 없습니다." });
 			return;

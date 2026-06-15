@@ -1,10 +1,14 @@
-import { Task } from "../models/Task";
+import { Task, type TaskPriority } from "../models/Task";
 
 type TaskInput = {
 	title: string;
+	description?: string;
+	priority?: TaskPriority;
 	start: Date;
 	end: Date;
 };
+
+type TaskUpdate = Partial<TaskInput>;
 
 export async function createTask(input: TaskInput) {
 	return Task.create(input);
@@ -14,9 +18,6 @@ export async function listTasks() {
 	return Task.find().sort({ start: 1 });
 }
 
-export async function updateTaskSchedule(
-	id: string,
-	schedule: { start: Date; end: Date },
-) {
-	return Task.findByIdAndUpdate(id, schedule, { new: true });
+export async function updateTask(id: string, update: TaskUpdate) {
+	return Task.findByIdAndUpdate(id, update, { new: true });
 }
