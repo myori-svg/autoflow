@@ -104,7 +104,7 @@ depends_on: Chunk 2
 브랜치: feature/auto-schedule-matrix → dev
 depends_on: Chunk 8
 
-- [ ] #53 [2.1.3] 할일 일정 optional화 (미배치 상태 지원)
+- [x] #53 [2.1.3] 할일 일정 optional화 (미배치 상태 지원)
       depends_on: 없음 / blocks: #10, #11, #9
 - [ ] #10 [2.3.1] 마감일+중요도 기반 우선순위 계산 (아이젠하워 매트릭스)
       depends_on: #53 / blocks: #11
