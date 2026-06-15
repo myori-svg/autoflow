@@ -58,7 +58,7 @@ depends_on: Chunk 3
 
 ---
 
-## Chunk 5 — 드래그 앤 드롭 일정 조정 (🟡 진행 중)
+## Chunk 5 — 드래그 앤 드롭 일정 조정 (✅ 완료)
 브랜치: feature/drag-drop-schedule → dev
 depends_on: Chunk 4
 
@@ -66,7 +66,7 @@ depends_on: Chunk 4
       depends_on: 없음 / blocks: #17
 - [x] #17 [3.2.3] 드롭 후 변경된 일정 DB 저장
       depends_on: #16 / blocks: #18, #21
-- [ ] #18 [3.2.4] 충돌 감지 및 경고
+- [x] #18 [3.2.4] 충돌 감지 및 경고
       depends_on: #17 / blocks: 없음
 
 ---
