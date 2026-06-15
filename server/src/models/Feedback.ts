@@ -1,21 +1,25 @@
-import { Schema, model } from 'mongoose'
+import { model, Schema } from "mongoose";
 
-export type FeedbackResult = 'accurate' | 'too_long' | 'too_short'
+export type FeedbackResult = "accurate" | "too_long" | "too_short";
 
 type FeedbackDocument = {
-  taskTitle: string
-  estimatedHours: number
-  actualResult: FeedbackResult
-  createdAt: Date
-}
+	taskTitle: string;
+	estimatedHours: number;
+	actualResult: FeedbackResult;
+	createdAt: Date;
+};
 
 const feedbackSchema = new Schema<FeedbackDocument>(
-  {
-    taskTitle: { type: String, required: true },
-    estimatedHours: { type: Number, required: true },
-    actualResult: { type: String, enum: ['accurate', 'too_long', 'too_short'], required: true },
-  },
-  { timestamps: { createdAt: true, updatedAt: false } },
-)
+	{
+		taskTitle: { type: String, required: true },
+		estimatedHours: { type: Number, required: true },
+		actualResult: {
+			type: String,
+			enum: ["accurate", "too_long", "too_short"],
+			required: true,
+		},
+	},
+	{ timestamps: { createdAt: true, updatedAt: false } },
+);
 
-export const Feedback = model<FeedbackDocument>('Feedback', feedbackSchema)
+export const Feedback = model<FeedbackDocument>("Feedback", feedbackSchema);

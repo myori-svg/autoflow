@@ -40,35 +40,38 @@ gh issue view $ARGUMENTS --json milestone --template '{{if .milestone}}{{.milest
 
 ---
 
-### Step 2 — 제목을 kebab-case로 변환
+### Step 2 — 브랜치명 결정
 
-조회한 제목을 아래 규칙으로 변환해:
-1. 소문자로 변환
-2. 영문, 숫자 이외의 문자(한글, 특수문자 등)는 공백으로 대체
-3. 공백 → 하이픈
-4. 연속 하이픈 → 단일 하이픈
-5. 앞뒤 하이픈 제거
+`docs/seq-plan.md`를 읽어서 `$ARGUMENTS` 이슈 번호(`#$ARGUMENTS`)가 속한 Chunk를 찾아.
 
-예시:
-- `[1.1.1] 할일 제목 입력 필드 UI 구현` → `1-1-1-ui`
-- `Add Todo Input Form UI` → `add-todo-input-form-ui`
-- `Fix: 캘린더 API 연동 버그` → `fix-api`
+- 찾았으면 → 해당 Chunk의 `브랜치: feature/{기능명} → dev` 라인에서 `feature/{기능명}`을 브랜치명으로 사용 (청크 단위 공유 브랜치).
+- `docs/seq-plan.md`가 없거나 이슈가 어느 Chunk에도 속하지 않으면 → 아래 fallback으로 제목을 kebab-case 변환:
+  1. 소문자로 변환
+  2. 영문, 숫자 이외의 문자(한글, 특수문자 등)는 공백으로 대체
+  3. 공백 → 하이픈
+  4. 연속 하이픈 → 단일 하이픈
+  5. 앞뒤 하이픈 제거
+  6. 변환 결과가 비어있으면 `feature`를 fallback으로 사용
 
-변환 결과가 비어있으면 `feature` 를 fallback으로 사용.
+  fallback 브랜치명 형식: `feature/#$ARGUMENTS-{변환된제목}`
+
+  예시:
+  - `[1.1.1] 할일 제목 입력 필드 UI 구현` → `feature/#1-1-1-1-ui` (seq-plan 미존재 시에만)
+  - `Add Todo Input Form UI` → `feature/#1-add-todo-input-form-ui`
 
 ---
 
 ### Step 3 — 브랜치 생성 및 체크아웃
 
-브랜치명 형식: `feature/#$ARGUMENTS-{변환된제목}`
+Step 2에서 결정한 브랜치명을 `{브랜치명}`이라 할 때:
 
 ```bash
-git checkout -b feature/#$ARGUMENTS-{변환된제목}
+git checkout -b {브랜치명}
 ```
 
 브랜치가 이미 존재해서 실패한 경우:
 ```bash
-git checkout feature/#$ARGUMENTS-{변환된제목}
+git checkout {브랜치명}
 ```
 체크아웃 후 `"기존 브랜치로 전환했습니다."` 를 결과에 포함.
 
@@ -94,17 +97,17 @@ gh issue edit $ARGUMENTS --add-label "in-progress"
 
 ```
 ✅ 작업 시작
-브랜치: feature/#23-1-1-1-ui
-이슈: #23 — [1.1.1] 할일 제목 입력 필드 UI 구현
-Milestone: 1. 할일 입력 및 마감일 설정
+브랜치: feature/drag-drop-schedule
+이슈: #16 — [3.2.1] 드래그 앤 드롭 감지
+Milestone: 3. 주간 캘린더 시각화 및 수동 조정
 상태: in-progress
 ```
 
 기존 브랜치로 전환한 경우:
 ```
 ✅ 작업 재개 (기존 브랜치로 전환했습니다.)
-브랜치: feature/#23-1-1-1-ui
-이슈: #23 — [1.1.1] 할일 제목 입력 필드 UI 구현
-Milestone: 1. 할일 입력 및 마감일 설정
+브랜치: feature/drag-drop-schedule
+이슈: #16 — [3.2.1] 드래그 앤 드롭 감지
+Milestone: 3. 주간 캘린더 시각화 및 수동 조정
 상태: in-progress
 ```
