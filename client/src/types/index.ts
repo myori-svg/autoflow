@@ -23,6 +23,7 @@ export type Task = {
 	start?: string;
 	end?: string;
 	scheduled: boolean;
+	estimatedHours?: number;
 };
 
 export type TaskUpdateInput = {
@@ -32,6 +33,18 @@ export type TaskUpdateInput = {
 	deadline?: string;
 	start?: string;
 	end?: string;
+	estimatedHours?: number;
+};
+
+export type DetailTask = {
+	id: string;
+	title: string;
+	description?: string;
+	priority: TaskPriority;
+	start?: string;
+	end?: string;
+	deadline?: string;
+	estimatedHours?: number;
 };
 
 export type CreateTaskInput = {
@@ -39,4 +52,5 @@ export type CreateTaskInput = {
 	deadline?: string;
 	start?: string;
 	end?: string;
+	estimatedHours?: number;
 };

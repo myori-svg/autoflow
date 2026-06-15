@@ -60,7 +60,7 @@ export function DatePicker({ selected, onSelect, error, touched }: Props) {
 	return (
 		<div className="flex flex-col gap-1 relative">
 			<label className="text-sm font-medium text-gray-700">
-				마감일 <span className="text-red-500">*</span>
+				마감일 <span className="text-gray-400">(선택)</span>
 			</label>
 			<div className="flex gap-2">
 				<button

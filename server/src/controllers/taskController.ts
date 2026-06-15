@@ -9,17 +9,20 @@ type ParsedTaskFields = {
 	deadline?: Date;
 	start?: Date;
 	end?: Date;
+	estimatedHours?: number;
 };
 
 function parseTaskFields(body: unknown): ParsedTaskFields | { error: string } {
-	const { title, description, priority, deadline, start, end } = body as {
-		title?: string;
-		description?: string;
-		priority?: string;
-		deadline?: string;
-		start?: string;
-		end?: string;
-	};
+	const { title, description, priority, deadline, start, end, estimatedHours } =
+		body as {
+			title?: string;
+			description?: string;
+			priority?: string;
+			deadline?: string;
+			start?: string;
+			end?: string;
+			estimatedHours?: number;
+		};
 
 	const fields: ParsedTaskFields = {};
 
@@ -57,6 +60,13 @@ function parseTaskFields(body: unknown): ParsedTaskFields | { error: string } {
 		fields.end = endDate;
 	}
 
+	if (estimatedHours !== undefined) {
+		if (typeof estimatedHours !== "number" || estimatedHours <= 0) {
+			return { error: "estimatedHours는 0보다 큰 숫자여야 합니다." };
+		}
+		fields.estimatedHours = estimatedHours;
+	}
+
 	return fields;
 }
 
@@ -71,17 +81,11 @@ export async function createTaskHandler(
 		return;
 	}
 
-	const { title, description, priority, deadline, start, end } = parsed;
+	const { title, description, priority, deadline, start, end, estimatedHours } =
+		parsed;
 
 	if (!title || title.trim().length === 0) {
 		res.status(400).json({ error: "할일 제목은 필수입니다." });
-		return;
-	}
-
-	if (!(start && end) && !deadline) {
-		res
-			.status(400)
-			.json({ error: "deadline 또는 start/end 중 하나는 필수입니다." });
 		return;
 	}
 
@@ -93,6 +97,7 @@ export async function createTaskHandler(
 			deadline,
 			start,
 			end,
+			estimatedHours,
 			scheduled: !!(start && end),
 		});
 		res.status(201).json(task);

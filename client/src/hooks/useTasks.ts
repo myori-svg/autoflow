@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { estimateTask } from "../api/ai";
 import { createTask, fetchTasks, updateTask } from "../api/tasks";
 import type {
 	CreateTaskInput,
@@ -53,7 +54,20 @@ export function useTasks(): UseTasksReturn {
 	const addTask = useCallback(
 		(input: CreateTaskInput) =>
 			sync(async () => {
-				const task = await createTask(input);
+				let estimatedHours = input.estimatedHours;
+				if (estimatedHours === undefined && input.deadline) {
+					try {
+						const estimate = await estimateTask(
+							input.title,
+							new Date(input.deadline),
+						);
+						estimatedHours = estimate.estimatedHours;
+					} catch (err) {
+						console.error("소요 시간 추정 실패", err);
+					}
+				}
+
+				const task = await createTask({ ...input, estimatedHours });
 				setAllTasks((prev) => [...prev, task]);
 			}),
 		[sync],
