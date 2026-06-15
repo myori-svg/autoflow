@@ -9,7 +9,7 @@ import { useSchedule } from "./hooks/useSchedule";
 import { useTaskDetail } from "./hooks/useTaskDetail";
 import { useTaskForm } from "./hooks/useTaskForm";
 import { useTasks } from "./hooks/useTasks";
-import type { ScheduledTask } from "./types";
+import type { ScheduledTask, TaskUpdateInput } from "./types";
 import { hasConflict } from "./utils/schedule";
 
 const CONFLICT_WARNING_MESSAGE =
@@ -21,7 +21,7 @@ const DEFAULT_DURATION_HOURS = 1;
 function App() {
 	const { title, deadline, setTitle, setDeadline, clearDraft } = useTaskForm();
 	const { scheduling, handleAutoSchedule } = useSchedule();
-	const { tasks, addTask, moveTask } = useTasks();
+	const { tasks, addTask, moveTask, editTask } = useTasks();
 	const { selectedTask, mode, handleTaskClick, closeDetail } = useTaskDetail();
 	const [submitted, setSubmitted] = useState(false);
 
@@ -54,6 +54,7 @@ function App() {
 		return {
 			id: DRAFT_TASK_ID,
 			title: title.trim(),
+			priority: "medium",
 			start: start.toISOString(),
 			end: deadline.toISOString(),
 		};
@@ -84,14 +85,21 @@ function App() {
 
 	const handleEventClick = (arg: EventClickArg) => {
 		const { event } = arg;
-		if (event.id === DRAFT_TASK_ID || !event.start || !event.end) return;
+		if (event.id === DRAFT_TASK_ID) return;
 
-		handleTaskClick({
-			id: event.id,
-			title: event.title,
-			start: event.start.toISOString(),
-			end: event.end.toISOString(),
-		});
+		const task = tasks.find((t) => t.id === event.id);
+		if (!task) return;
+
+		handleTaskClick(task);
+	};
+
+	const handleTaskSave = async (id: string, fields: TaskUpdateInput) => {
+		try {
+			await editTask(id, fields);
+			closeDetail();
+		} catch (err) {
+			alert(err instanceof Error ? err.message : "할일 수정에 실패했습니다.");
+		}
 	};
 
 	return (
@@ -138,6 +146,7 @@ function App() {
 					task={selectedTask}
 					mode={mode}
 					onClose={closeDetail}
+					onSave={(fields) => handleTaskSave(selectedTask.id, fields)}
 				/>
 			)}
 		</div>

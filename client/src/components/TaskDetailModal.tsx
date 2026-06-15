@@ -1,11 +1,21 @@
+import { useState } from "react";
 import type { TaskDetailMode } from "../hooks/useTaskDetail";
-import type { ScheduledTask } from "../types";
+import type { ScheduledTask, TaskPriority, TaskUpdateInput } from "../types";
 
 type TaskDetailModalProps = {
 	task: ScheduledTask;
 	mode: TaskDetailMode;
 	onClose: () => void;
+	onSave: (fields: TaskUpdateInput) => void;
 };
+
+const PRIORITY_LABELS: Record<TaskPriority, string> = {
+	low: "낮음",
+	medium: "보통",
+	high: "높음",
+};
+
+const MS_PER_HOUR = 60 * 60 * 1000;
 
 function formatDateTime(iso: string): string {
 	return new Date(iso).toLocaleString("ko-KR", {
@@ -16,38 +26,194 @@ function formatDateTime(iso: string): string {
 	});
 }
 
-export function TaskDetailModal({ task, mode, onClose }: TaskDetailModalProps) {
+function toDateTimeLocal(iso: string): string {
+	const date = new Date(iso);
+	const offsetMs = date.getTimezoneOffset() * 60 * 1000;
+	return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
+}
+
+function durationHours(start: string, end: string): number {
+	return (
+		Math.round(
+			((new Date(end).getTime() - new Date(start).getTime()) / MS_PER_HOUR) *
+				100,
+		) / 100
+	);
+}
+
+export function TaskDetailModal({
+	task,
+	mode,
+	onClose,
+	onSave,
+}: TaskDetailModalProps) {
+	const [editing, setEditing] = useState(mode === "edit");
+	const [title, setTitle] = useState(task.title);
+	const [description, setDescription] = useState(task.description ?? "");
+	const [priority, setPriority] = useState<TaskPriority>(task.priority);
+	const [start, setStart] = useState(task.start);
+	const [end, setEnd] = useState(task.end);
+
+	const handleStartChange = (value: string) => {
+		const newStart = new Date(value).toISOString();
+		setStart(newStart);
+	};
+
+	const handleDeadlineChange = (value: string) => {
+		setEnd(new Date(value).toISOString());
+	};
+
+	const handleDurationChange = (value: string) => {
+		const hours = Number(value);
+		if (Number.isNaN(hours) || hours <= 0) return;
+		setEnd(
+			new Date(new Date(start).getTime() + hours * MS_PER_HOUR).toISOString(),
+		);
+	};
+
+	const handleSave = () => {
+		if (title.trim().length === 0) return;
+		onSave({
+			title: title.trim(),
+			description: description.trim(),
+			priority,
+			start,
+			end,
+		});
+	};
+
+	const handleCancel = () => {
+		setTitle(task.title);
+		setDescription(task.description ?? "");
+		setPriority(task.priority);
+		setStart(task.start);
+		setEnd(task.end);
+		setEditing(false);
+	};
+
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
 			<div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-lg">
-				{mode === "edit" ? (
-					<input
-						className="w-full border-b border-gray-300 pb-1 text-lg font-semibold text-gray-900 focus:outline-none focus:border-blue-500"
-						defaultValue={task.title}
-						autoFocus
-					/>
+				{editing ? (
+					<div className="flex flex-col gap-3">
+						<input
+							className="w-full border-b border-gray-300 pb-1 text-lg font-semibold text-gray-900 focus:outline-none focus:border-blue-500"
+							value={title}
+							onChange={(e) => setTitle(e.target.value)}
+						/>
+						<textarea
+							className="w-full rounded-md border border-gray-300 p-2 text-sm text-gray-700 focus:outline-none focus:border-blue-500"
+							placeholder="설명"
+							rows={3}
+							value={description}
+							onChange={(e) => setDescription(e.target.value)}
+						/>
+						<label className="flex flex-col gap-1 text-sm text-gray-600">
+							중요도
+							<select
+								className="rounded-md border border-gray-300 p-2"
+								value={priority}
+								onChange={(e) => setPriority(e.target.value as TaskPriority)}
+							>
+								{Object.entries(PRIORITY_LABELS).map(([value, label]) => (
+									<option key={value} value={value}>
+										{label}
+									</option>
+								))}
+							</select>
+						</label>
+						<label className="flex flex-col gap-1 text-sm text-gray-600">
+							시작 시간
+							<input
+								type="datetime-local"
+								className="rounded-md border border-gray-300 p-2"
+								value={toDateTimeLocal(start)}
+								onChange={(e) => handleStartChange(e.target.value)}
+							/>
+						</label>
+						<label className="flex flex-col gap-1 text-sm text-gray-600">
+							마감일
+							<input
+								type="datetime-local"
+								className="rounded-md border border-gray-300 p-2"
+								value={toDateTimeLocal(end)}
+								onChange={(e) => handleDeadlineChange(e.target.value)}
+							/>
+						</label>
+						<label className="flex flex-col gap-1 text-sm text-gray-600">
+							소요 시간 (시간)
+							<input
+								type="number"
+								min="0.5"
+								step="0.5"
+								className="rounded-md border border-gray-300 p-2"
+								value={durationHours(start, end)}
+								onChange={(e) => handleDurationChange(e.target.value)}
+							/>
+						</label>
+					</div>
 				) : (
-					<h2 className="text-lg font-semibold text-gray-900">{task.title}</h2>
+					<>
+						<h2 className="text-lg font-semibold text-gray-900">
+							{task.title}
+						</h2>
+						{task.description && (
+							<p className="mt-2 text-sm text-gray-600">{task.description}</p>
+						)}
+						<dl className="mt-4 space-y-2 text-sm text-gray-600">
+							<div className="flex justify-between">
+								<dt>중요도</dt>
+								<dd>{PRIORITY_LABELS[task.priority]}</dd>
+							</div>
+							<div className="flex justify-between">
+								<dt>시작</dt>
+								<dd>{formatDateTime(task.start)}</dd>
+							</div>
+							<div className="flex justify-between">
+								<dt>마감일</dt>
+								<dd>{formatDateTime(task.end)}</dd>
+							</div>
+						</dl>
+					</>
 				)}
 
-				<dl className="mt-4 space-y-2 text-sm text-gray-600">
-					<div className="flex justify-between">
-						<dt>시작</dt>
-						<dd>{formatDateTime(task.start)}</dd>
-					</div>
-					<div className="flex justify-between">
-						<dt>종료</dt>
-						<dd>{formatDateTime(task.end)}</dd>
-					</div>
-				</dl>
-
-				<button
-					type="button"
-					onClick={onClose}
-					className="mt-6 w-full rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
-				>
-					닫기
-				</button>
+				<div className="mt-6 flex gap-2">
+					{editing ? (
+						<>
+							<button
+								type="button"
+								onClick={handleCancel}
+								className="flex-1 rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+							>
+								취소
+							</button>
+							<button
+								type="button"
+								onClick={handleSave}
+								className="flex-1 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+							>
+								저장
+							</button>
+						</>
+					) : (
+						<>
+							<button
+								type="button"
+								onClick={onClose}
+								className="flex-1 rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+							>
+								닫기
+							</button>
+							<button
+								type="button"
+								onClick={() => setEditing(true)}
+								className="flex-1 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+							>
+								편집
+							</button>
+						</>
+					)}
+				</div>
 			</div>
 		</div>
 	);
