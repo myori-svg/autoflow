@@ -8,6 +8,10 @@ import { useSchedule } from "./hooks/useSchedule";
 import { useTaskForm } from "./hooks/useTaskForm";
 import { useTasks } from "./hooks/useTasks";
 import type { ScheduledTask } from "./types";
+import { hasConflict } from "./utils/schedule";
+
+const CONFLICT_WARNING_MESSAGE =
+	"기존 일정과 시간이 겹칩니다. 그래도 이동하시겠습니까?";
 
 const DRAFT_TASK_ID = "draft";
 const DEFAULT_DURATION_HOURS = 1;
@@ -58,12 +62,21 @@ function App() {
 		const { event } = arg;
 		if (!event.start || !event.end) return;
 		if (event.id === DRAFT_TASK_ID) return;
-		moveTask(event.id, event.start.toISOString(), event.end.toISOString()).catch(
-			(err) => {
-				alert(err instanceof Error ? err.message : "일정 변경에 실패했습니다.");
+
+		const start = event.start.toISOString();
+		const end = event.end.toISOString();
+
+		if (hasConflict({ id: event.id, start, end }, tasks)) {
+			if (!confirm(CONFLICT_WARNING_MESSAGE)) {
 				arg.revert();
-			},
-		);
+				return;
+			}
+		}
+
+		moveTask(event.id, start, end).catch((err) => {
+			alert(err instanceof Error ? err.message : "일정 변경에 실패했습니다.");
+			arg.revert();
+		});
 	};
 
 	return (
