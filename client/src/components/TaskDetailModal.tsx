@@ -1,9 +1,9 @@
 import { useState } from "react";
 import type { TaskDetailMode } from "../hooks/useTaskDetail";
-import type { ScheduledTask, TaskPriority, TaskUpdateInput } from "../types";
+import type { DetailTask, TaskPriority, TaskUpdateInput } from "../types";
 
 type TaskDetailModalProps = {
-	task: ScheduledTask;
+	task: DetailTask;
 	mode: TaskDetailMode;
 	onClose: () => void;
 	onSave: (fields: TaskUpdateInput) => void;
@@ -47,28 +47,40 @@ export function TaskDetailModal({
 	onClose,
 	onSave,
 }: TaskDetailModalProps) {
+	const isScheduled = !!(task.start && task.end);
 	const [editing, setEditing] = useState(mode === "edit");
 	const [title, setTitle] = useState(task.title);
 	const [description, setDescription] = useState(task.description ?? "");
 	const [priority, setPriority] = useState<TaskPriority>(task.priority);
 	const [start, setStart] = useState(task.start);
 	const [end, setEnd] = useState(task.end);
+	const [deadline, setDeadline] = useState(task.deadline);
+	const [estimatedHours, setEstimatedHours] = useState(task.estimatedHours);
 
 	const handleStartChange = (value: string) => {
-		const newStart = new Date(value).toISOString();
-		setStart(newStart);
+		setStart(new Date(value).toISOString());
 	};
 
-	const handleDeadlineChange = (value: string) => {
+	const handleEndChange = (value: string) => {
 		setEnd(new Date(value).toISOString());
 	};
 
 	const handleDurationChange = (value: string) => {
+		if (!start) return;
 		const hours = Number(value);
 		if (Number.isNaN(hours) || hours <= 0) return;
 		setEnd(
 			new Date(new Date(start).getTime() + hours * MS_PER_HOUR).toISOString(),
 		);
+	};
+
+	const handleDeadlineChange = (value: string) => {
+		setDeadline(value ? new Date(value).toISOString() : undefined);
+	};
+
+	const handleEstimatedHoursChange = (value: string) => {
+		const hours = Number(value);
+		setEstimatedHours(Number.isNaN(hours) || hours <= 0 ? undefined : hours);
 	};
 
 	const handleSave = () => {
@@ -77,8 +89,7 @@ export function TaskDetailModal({
 			title: title.trim(),
 			description: description.trim(),
 			priority,
-			start,
-			end,
+			...(isScheduled ? { start, end } : { deadline, estimatedHours }),
 		});
 	};
 
@@ -88,6 +99,8 @@ export function TaskDetailModal({
 		setPriority(task.priority);
 		setStart(task.start);
 		setEnd(task.end);
+		setDeadline(task.deadline);
+		setEstimatedHours(task.estimatedHours);
 		setEditing(false);
 	};
 
@@ -122,35 +135,62 @@ export function TaskDetailModal({
 								))}
 							</select>
 						</label>
-						<label className="flex flex-col gap-1 text-sm text-gray-600">
-							시작 시간
-							<input
-								type="datetime-local"
-								className="rounded-md border border-gray-300 p-2"
-								value={toDateTimeLocal(start)}
-								onChange={(e) => handleStartChange(e.target.value)}
-							/>
-						</label>
-						<label className="flex flex-col gap-1 text-sm text-gray-600">
-							마감일
-							<input
-								type="datetime-local"
-								className="rounded-md border border-gray-300 p-2"
-								value={toDateTimeLocal(end)}
-								onChange={(e) => handleDeadlineChange(e.target.value)}
-							/>
-						</label>
-						<label className="flex flex-col gap-1 text-sm text-gray-600">
-							소요 시간 (시간)
-							<input
-								type="number"
-								min="0.5"
-								step="0.5"
-								className="rounded-md border border-gray-300 p-2"
-								value={durationHours(start, end)}
-								onChange={(e) => handleDurationChange(e.target.value)}
-							/>
-						</label>
+						{isScheduled && start && end ? (
+							<>
+								<label className="flex flex-col gap-1 text-sm text-gray-600">
+									시작 시간
+									<input
+										type="datetime-local"
+										className="rounded-md border border-gray-300 p-2"
+										value={toDateTimeLocal(start)}
+										onChange={(e) => handleStartChange(e.target.value)}
+									/>
+								</label>
+								<label className="flex flex-col gap-1 text-sm text-gray-600">
+									마감일
+									<input
+										type="datetime-local"
+										className="rounded-md border border-gray-300 p-2"
+										value={toDateTimeLocal(end)}
+										onChange={(e) => handleEndChange(e.target.value)}
+									/>
+								</label>
+								<label className="flex flex-col gap-1 text-sm text-gray-600">
+									소요 시간 (시간)
+									<input
+										type="number"
+										min="0.5"
+										step="0.5"
+										className="rounded-md border border-gray-300 p-2"
+										value={durationHours(start, end)}
+										onChange={(e) => handleDurationChange(e.target.value)}
+									/>
+								</label>
+							</>
+						) : (
+							<>
+								<label className="flex flex-col gap-1 text-sm text-gray-600">
+									마감일
+									<input
+										type="datetime-local"
+										className="rounded-md border border-gray-300 p-2"
+										value={deadline ? toDateTimeLocal(deadline) : ""}
+										onChange={(e) => handleDeadlineChange(e.target.value)}
+									/>
+								</label>
+								<label className="flex flex-col gap-1 text-sm text-gray-600">
+									예상 소요 시간 (시간)
+									<input
+										type="number"
+										min="0.5"
+										step="0.5"
+										className="rounded-md border border-gray-300 p-2"
+										value={estimatedHours ?? ""}
+										onChange={(e) => handleEstimatedHoursChange(e.target.value)}
+									/>
+								</label>
+							</>
+						)}
 					</div>
 				) : (
 					<>
@@ -165,14 +205,35 @@ export function TaskDetailModal({
 								<dt>중요도</dt>
 								<dd>{PRIORITY_LABELS[task.priority]}</dd>
 							</div>
-							<div className="flex justify-between">
-								<dt>시작</dt>
-								<dd>{formatDateTime(task.start)}</dd>
-							</div>
-							<div className="flex justify-between">
-								<dt>마감일</dt>
-								<dd>{formatDateTime(task.end)}</dd>
-							</div>
+							{isScheduled && task.start && task.end ? (
+								<>
+									<div className="flex justify-between">
+										<dt>시작</dt>
+										<dd>{formatDateTime(task.start)}</dd>
+									</div>
+									<div className="flex justify-between">
+										<dt>마감일</dt>
+										<dd>{formatDateTime(task.end)}</dd>
+									</div>
+								</>
+							) : (
+								<>
+									<div className="flex justify-between">
+										<dt>마감일</dt>
+										<dd>
+											{task.deadline ? formatDateTime(task.deadline) : "미설정"}
+										</dd>
+									</div>
+									<div className="flex justify-between">
+										<dt>예상 소요 시간</dt>
+										<dd>
+											{task.estimatedHours !== undefined
+												? `${task.estimatedHours}시간`
+												: "미설정"}
+										</dd>
+									</div>
+								</>
+							)}
 						</dl>
 					</>
 				)}

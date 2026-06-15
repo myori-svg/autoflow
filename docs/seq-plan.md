@@ -112,3 +112,12 @@ depends_on: Chunk 8
       depends_on: #10 / blocks: #9
 - [x] #9 [2.2.2] 자동 배분 실행 로직
       depends_on: #11 / blocks: 없음
+
+---
+
+## Chunk 10 — 소요시간 추정값 영속화 (✅ 완료)
+브랜치: feature/estimated-hours → dev
+depends_on: Chunk 9
+
+- [x] #55 [2.1.4] 소요시간 추정값(estimatedHours) 저장 및 편집
+      depends_on: 없음 / blocks: 없음

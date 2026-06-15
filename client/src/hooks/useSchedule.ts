@@ -31,6 +31,9 @@ export function useSchedule(): UseScheduleReturn {
 		try {
 			const withEstimates: TaskWithEstimate[] = await Promise.all(
 				unscheduled.map(async (task) => {
+					if (task.estimatedHours !== undefined) {
+						return task;
+					}
 					if (!task.deadline) {
 						return { ...task, estimatedHours: DEFAULT_ESTIMATED_HOURS };
 					}
@@ -43,9 +46,20 @@ export function useSchedule(): UseScheduleReturn {
 			);
 
 			const assignments = assignSchedules(withEstimates, scheduled);
+			const estimatesById = new Map(
+				withEstimates.map((task) => [task._id, task.estimatedHours]),
+			);
 
 			for (const { id, start, end } of assignments) {
-				await onAssign(id, { start, end });
+				const original = unscheduled.find((task) => task._id === id);
+				const fields: TaskUpdateInput = { start, end };
+				if (
+					original?.estimatedHours === undefined &&
+					estimatesById.get(id) !== undefined
+				) {
+					fields.estimatedHours = estimatesById.get(id);
+				}
+				await onAssign(id, fields);
 			}
 
 			alert(`${assignments.length}개의 할일을 캘린더에 배치했습니다.`);

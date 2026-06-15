@@ -32,15 +32,16 @@ function App() {
 		submitted && title.trim().length === 0
 			? "할일 제목을 입력해주세요."
 			: undefined;
-	const deadlineError =
-		submitted && !deadline ? "마감일을 선택해주세요." : undefined;
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setSubmitted(true);
-		if (!title.trim() || !deadline) return;
+		if (!title.trim()) return;
 		try {
-			await addTask({ title: title.trim(), deadline: deadline.toISOString() });
+			await addTask({
+				title: title.trim(),
+				...(deadline ? { deadline: deadline.toISOString() } : {}),
+			});
 			clearDraft();
 			setSubmitted(false);
 		} catch (err) {
@@ -114,12 +115,7 @@ function App() {
 						</h1>
 						<form onSubmit={handleSubmit} className="flex flex-col gap-4">
 							<TaskInput value={title} onChange={setTitle} error={titleError} />
-							<DatePicker
-								selected={deadline}
-								onSelect={setDeadline}
-								error={deadlineError}
-								touched={submitted}
-							/>
+							<DatePicker selected={deadline} onSelect={setDeadline} />
 							<button
 								type="submit"
 								className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
@@ -131,7 +127,10 @@ function App() {
 
 					{unscheduledTasks.length > 0 && (
 						<div className="w-full max-w-md flex flex-col gap-4">
-							<UnscheduledTaskList tasks={unscheduledTasks} />
+							<UnscheduledTaskList
+								tasks={unscheduledTasks}
+								onTaskClick={handleTaskClick}
+							/>
 							<AutoScheduleButton
 								disabled={unscheduledTasks.length === 0}
 								loading={scheduling}

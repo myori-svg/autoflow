@@ -11,6 +11,7 @@ type TaskDocument = {
 	start?: Date;
 	end?: Date;
 	scheduled: boolean;
+	estimatedHours?: number;
 };
 
 const taskSchema = new Schema<TaskDocument>(
@@ -26,6 +27,7 @@ const taskSchema = new Schema<TaskDocument>(
 		start: { type: Date },
 		end: { type: Date },
 		scheduled: { type: Boolean, default: false },
+		estimatedHours: { type: Number },
 	},
 	{ timestamps: { createdAt: true, updatedAt: true } },
 );

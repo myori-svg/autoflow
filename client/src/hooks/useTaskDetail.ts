@@ -1,23 +1,23 @@
 import { useCallback, useRef, useState } from "react";
-import type { ScheduledTask } from "../types";
+import type { DetailTask } from "../types";
 
 const DOUBLE_CLICK_THRESHOLD_MS = 300;
 
 export type TaskDetailMode = "view" | "edit";
 
 type UseTaskDetailReturn = {
-	selectedTask: ScheduledTask | null;
+	selectedTask: DetailTask | null;
 	mode: TaskDetailMode;
-	handleTaskClick: (task: ScheduledTask) => void;
+	handleTaskClick: (task: DetailTask) => void;
 	closeDetail: () => void;
 };
 
 export function useTaskDetail(): UseTaskDetailReturn {
-	const [selectedTask, setSelectedTask] = useState<ScheduledTask | null>(null);
+	const [selectedTask, setSelectedTask] = useState<DetailTask | null>(null);
 	const [mode, setMode] = useState<TaskDetailMode>("view");
 	const clickTimer = useRef<number | null>(null);
 
-	const handleTaskClick = useCallback((task: ScheduledTask) => {
+	const handleTaskClick = useCallback((task: DetailTask) => {
 		if (clickTimer.current !== null) {
 			window.clearTimeout(clickTimer.current);
 			clickTimer.current = null;

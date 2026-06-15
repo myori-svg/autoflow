@@ -8,6 +8,7 @@ type TaskInput = {
 	start?: Date;
 	end?: Date;
 	scheduled: boolean;
+	estimatedHours?: number;
 };
 
 type TaskUpdate = Partial<TaskInput>;
