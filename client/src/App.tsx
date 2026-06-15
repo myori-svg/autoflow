@@ -2,6 +2,7 @@ import type { EventClickArg, EventDropArg } from "@fullcalendar/core";
 import { useMemo, useState } from "react";
 import { AutoScheduleButton } from "./components/AutoScheduleButton";
 import { DatePicker } from "./components/DatePicker";
+import { SyncStatusIndicator } from "./components/SyncStatusIndicator";
 import { TaskDetailModal } from "./components/TaskDetailModal";
 import { TaskInput } from "./components/TaskInput";
 import { WeekCalendar } from "./components/WeekCalendar";
@@ -21,7 +22,7 @@ const DEFAULT_DURATION_HOURS = 1;
 function App() {
 	const { title, deadline, setTitle, setDeadline, clearDraft } = useTaskForm();
 	const { scheduling, handleAutoSchedule } = useSchedule();
-	const { tasks, addTask, moveTask, editTask } = useTasks();
+	const { tasks, syncStatus, addTask, moveTask, editTask } = useTasks();
 	const { selectedTask, mode, handleTaskClick, closeDetail } = useTaskDetail();
 	const [submitted, setSubmitted] = useState(false);
 
@@ -39,9 +40,13 @@ function App() {
 		const start = new Date(
 			deadline.getTime() - DEFAULT_DURATION_HOURS * 60 * 60 * 1000,
 		);
-		await addTask(title.trim(), start.toISOString(), deadline.toISOString());
-		clearDraft();
-		setSubmitted(false);
+		try {
+			await addTask(title.trim(), start.toISOString(), deadline.toISOString());
+			clearDraft();
+			setSubmitted(false);
+		} catch (err) {
+			alert(err instanceof Error ? err.message : "할일 추가에 실패했습니다.");
+		}
 	};
 
 	const canAutoSchedule = title.trim().length > 0 && !!deadline;
@@ -149,6 +154,8 @@ function App() {
 					onSave={(fields) => handleTaskSave(selectedTask.id, fields)}
 				/>
 			)}
+
+			<SyncStatusIndicator status={syncStatus} />
 		</div>
 	);
 }

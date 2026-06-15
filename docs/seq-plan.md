@@ -82,9 +82,9 @@ depends_on: Chunk 4 (Chunk 5와 병렬 진행 가능)
 
 ---
 
-## Chunk 7 — 실시간 데이터 동기화 (⏳ 대기)
+## Chunk 7 — 실시간 데이터 동기화 (✅ 완료)
 브랜치: feature/realtime-sync → dev
 depends_on: Chunk 5, Chunk 6
 
-- [ ] #21 [3.4.1] 실시간 데이터 동기화
+- [x] #21 [3.4.1] 실시간 데이터 동기화
       depends_on: #17, #20 / blocks: 없음
