@@ -108,7 +108,7 @@ depends_on: Chunk 8
       depends_on: 없음 / blocks: #10, #11, #9
 - [x] #10 [2.3.1] 마감일+중요도 기반 우선순위 계산 (아이젠하워 매트릭스)
       depends_on: #53 / blocks: #11
-- [ ] #11 [2.3.2] 우선순위 기반 일정 배치
+- [x] #11 [2.3.2] 우선순위 기반 일정 배치
       depends_on: #10 / blocks: #9
 - [ ] #9 [2.2.2] 자동 배분 실행 로직
       depends_on: #11 / blocks: 없음
