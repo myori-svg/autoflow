@@ -48,8 +48,6 @@ function App() {
 		}
 	};
 
-	const canAutoSchedule = title.trim().length > 0 && !!deadline;
-
 	const draftTask: ScheduledTask | null = useMemo(() => {
 		if (!title.trim() || !deadline) return null;
 		const start = new Date(
@@ -121,14 +119,6 @@ function App() {
 							error={deadlineError}
 							touched={submitted}
 						/>
-						<AutoScheduleButton
-							disabled={!canAutoSchedule}
-							loading={scheduling}
-							onClick={() => {
-								if (title.trim() && deadline)
-									handleAutoSchedule(title.trim(), deadline);
-							}}
-						/>
 						<button
 							type="submit"
 							className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
@@ -138,7 +128,18 @@ function App() {
 					</form>
 				</div>
 
-				<UnscheduledTaskList tasks={unscheduledTasks} />
+				{unscheduledTasks.length > 0 && (
+					<div className="w-full max-w-md flex flex-col gap-4">
+						<UnscheduledTaskList tasks={unscheduledTasks} />
+						<AutoScheduleButton
+							disabled={unscheduledTasks.length === 0}
+							loading={scheduling}
+							onClick={() => {
+								handleAutoSchedule(unscheduledTasks, tasks, editTask);
+							}}
+						/>
+					</div>
+				)}
 
 				<WeekCalendar
 					events={events}
