@@ -1,4 +1,4 @@
-import type { EventDropArg } from "@fullcalendar/core";
+import type { EventClickArg, EventDropArg } from "@fullcalendar/core";
 import interactionPlugin from "@fullcalendar/interaction";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -7,9 +7,14 @@ import type { ScheduledTask } from "../types";
 type WeekCalendarProps = {
 	events: ScheduledTask[];
 	onEventDrop: (arg: EventDropArg) => void;
+	onEventClick: (arg: EventClickArg) => void;
 };
 
-export function WeekCalendar({ events, onEventDrop }: WeekCalendarProps) {
+export function WeekCalendar({
+	events,
+	onEventDrop,
+	onEventClick,
+}: WeekCalendarProps) {
 	return (
 		<div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
 			<FullCalendar
@@ -36,6 +41,7 @@ export function WeekCalendar({ events, onEventDrop }: WeekCalendarProps) {
 				eventDurationEditable={false}
 				longPressDelay={200}
 				eventDrop={onEventDrop}
+				eventClick={onEventClick}
 			/>
 		</div>
 	);

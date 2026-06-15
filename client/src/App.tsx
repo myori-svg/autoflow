@@ -1,10 +1,12 @@
-import type { EventDropArg } from "@fullcalendar/core";
+import type { EventClickArg, EventDropArg } from "@fullcalendar/core";
 import { useMemo, useState } from "react";
 import { AutoScheduleButton } from "./components/AutoScheduleButton";
 import { DatePicker } from "./components/DatePicker";
+import { TaskDetailModal } from "./components/TaskDetailModal";
 import { TaskInput } from "./components/TaskInput";
 import { WeekCalendar } from "./components/WeekCalendar";
 import { useSchedule } from "./hooks/useSchedule";
+import { useTaskDetail } from "./hooks/useTaskDetail";
 import { useTaskForm } from "./hooks/useTaskForm";
 import { useTasks } from "./hooks/useTasks";
 import type { ScheduledTask } from "./types";
@@ -20,6 +22,7 @@ function App() {
 	const { title, deadline, setTitle, setDeadline, clearDraft } = useTaskForm();
 	const { scheduling, handleAutoSchedule } = useSchedule();
 	const { tasks, addTask, moveTask } = useTasks();
+	const { selectedTask, mode, handleTaskClick, closeDetail } = useTaskDetail();
 	const [submitted, setSubmitted] = useState(false);
 
 	const titleError =
@@ -79,6 +82,18 @@ function App() {
 		});
 	};
 
+	const handleEventClick = (arg: EventClickArg) => {
+		const { event } = arg;
+		if (event.id === DRAFT_TASK_ID || !event.start || !event.end) return;
+
+		handleTaskClick({
+			id: event.id,
+			title: event.title,
+			start: event.start.toISOString(),
+			end: event.end.toISOString(),
+		});
+	};
+
 	return (
 		<div className="min-h-screen bg-gray-50 px-4 py-16">
 			<div className="mx-auto max-w-5xl flex flex-col gap-8">
@@ -111,8 +126,20 @@ function App() {
 					</form>
 				</div>
 
-				<WeekCalendar events={events} onEventDrop={handleEventDrop} />
+				<WeekCalendar
+					events={events}
+					onEventDrop={handleEventDrop}
+					onEventClick={handleEventClick}
+				/>
 			</div>
+
+			{selectedTask && (
+				<TaskDetailModal
+					task={selectedTask}
+					mode={mode}
+					onClose={closeDetail}
+				/>
+			)}
 		</div>
 	);
 }

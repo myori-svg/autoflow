@@ -1,0 +1,42 @@
+import { useCallback, useRef, useState } from "react";
+import type { ScheduledTask } from "../types";
+
+const DOUBLE_CLICK_THRESHOLD_MS = 300;
+
+export type TaskDetailMode = "view" | "edit";
+
+type UseTaskDetailReturn = {
+	selectedTask: ScheduledTask | null;
+	mode: TaskDetailMode;
+	handleTaskClick: (task: ScheduledTask) => void;
+	closeDetail: () => void;
+};
+
+export function useTaskDetail(): UseTaskDetailReturn {
+	const [selectedTask, setSelectedTask] = useState<ScheduledTask | null>(null);
+	const [mode, setMode] = useState<TaskDetailMode>("view");
+	const clickTimer = useRef<number | null>(null);
+
+	const handleTaskClick = useCallback((task: ScheduledTask) => {
+		if (clickTimer.current !== null) {
+			window.clearTimeout(clickTimer.current);
+			clickTimer.current = null;
+			setSelectedTask(task);
+			setMode("edit");
+			return;
+		}
+
+		clickTimer.current = window.setTimeout(() => {
+			setSelectedTask(task);
+			setMode("view");
+			clickTimer.current = null;
+		}, DOUBLE_CLICK_THRESHOLD_MS);
+	}, []);
+
+	const closeDetail = useCallback(() => {
+		setSelectedTask(null);
+		setMode("view");
+	}, []);
+
+	return { selectedTask, mode, handleTaskClick, closeDetail };
+}
