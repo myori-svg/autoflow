@@ -19,14 +19,24 @@ export type Task = {
 	title: string;
 	description?: string;
 	priority: TaskPriority;
-	start: string;
-	end: string;
+	deadline?: string;
+	start?: string;
+	end?: string;
+	scheduled: boolean;
 };
 
 export type TaskUpdateInput = {
 	title?: string;
 	description?: string;
 	priority?: TaskPriority;
+	deadline?: string;
+	start?: string;
+	end?: string;
+};
+
+export type CreateTaskInput = {
+	title: string;
+	deadline?: string;
 	start?: string;
 	end?: string;
 };

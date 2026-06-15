@@ -1,4 +1,4 @@
-import type { Task, TaskUpdateInput } from "../types";
+import type { CreateTaskInput, Task, TaskUpdateInput } from "../types";
 
 export async function fetchTasks(): Promise<Task[]> {
 	const res = await fetch("/api/tasks");
@@ -6,15 +6,11 @@ export async function fetchTasks(): Promise<Task[]> {
 	return res.json() as Promise<Task[]>;
 }
 
-export async function createTask(
-	title: string,
-	start: string,
-	end: string,
-): Promise<Task> {
+export async function createTask(input: CreateTaskInput): Promise<Task> {
 	const res = await fetch("/api/tasks", {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ title, start, end }),
+		body: JSON.stringify(input),
 	});
 	if (!res.ok) throw new Error(`서버 오류: ${res.status}`);
 	return res.json() as Promise<Task>;

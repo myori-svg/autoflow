@@ -4,8 +4,10 @@ type TaskInput = {
 	title: string;
 	description?: string;
 	priority?: TaskPriority;
-	start: Date;
-	end: Date;
+	deadline?: Date;
+	start?: Date;
+	end?: Date;
+	scheduled: boolean;
 };
 
 type TaskUpdate = Partial<TaskInput>;
