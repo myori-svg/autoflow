@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { TASK_PRIORITIES, type TaskPriority } from "../models/Task";
-import { createTask, listTasks, updateTask } from "../services/task";
+import { createTask, deleteTask, listTasks, updateTask } from "../services/task";
 
 type ParsedTaskFields = {
 	title?: string;
@@ -104,6 +104,24 @@ export async function createTaskHandler(
 	} catch (err) {
 		const message = err instanceof Error ? err.message : "알 수 없는 오류";
 		res.status(500).json({ error: `할일 저장 실패: ${message}` });
+	}
+}
+
+export async function deleteTaskHandler(
+	req: Request,
+	res: Response,
+): Promise<void> {
+	try {
+		const id = String(req.params.id);
+		const task = await deleteTask(id);
+		if (!task) {
+			res.status(404).json({ error: "해당 할일을 찾을 수 없습니다." });
+			return;
+		}
+		res.status(204).send();
+	} catch (err) {
+		const message = err instanceof Error ? err.message : "알 수 없는 오류";
+		res.status(500).json({ error: `할일 삭제 실패: ${message}` });
 	}
 }
 

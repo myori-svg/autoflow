@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { estimateTask } from "../api/ai";
-import { createTask, fetchTasks, updateTask } from "../api/tasks";
+import { createTask, deleteTask, fetchTasks, updateTask } from "../api/tasks";
 import type {
 	CreateTaskInput,
 	ScheduledTask,
@@ -28,6 +28,7 @@ type UseTasksReturn = {
 	addTask: (input: CreateTaskInput) => Promise<void>;
 	moveTask: (id: string, start: string, end: string) => Promise<void>;
 	editTask: (id: string, fields: TaskUpdateInput) => Promise<void>;
+	removeTask: (id: string) => Promise<void>;
 };
 
 export function useTasks(): UseTasksReturn {
@@ -91,9 +92,26 @@ export function useTasks(): UseTasksReturn {
 		[sync],
 	);
 
+	const removeTask = useCallback(
+		(id: string) =>
+			sync(async () => {
+				await deleteTask(id);
+				setAllTasks((prev) => prev.filter((t) => t._id !== id));
+			}),
+		[sync],
+	);
+
 	const isScheduled = (t: Task) => !!(t.start && t.end);
 	const tasks = allTasks.filter(isScheduled).map(toScheduledTask);
 	const unscheduledTasks = allTasks.filter((t) => !isScheduled(t));
 
-	return { tasks, unscheduledTasks, syncStatus, addTask, moveTask, editTask };
+	return {
+		tasks,
+		unscheduledTasks,
+		syncStatus,
+		addTask,
+		moveTask,
+		editTask,
+		removeTask,
+	};
 }

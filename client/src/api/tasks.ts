@@ -16,6 +16,11 @@ export async function createTask(input: CreateTaskInput): Promise<Task> {
 	return res.json() as Promise<Task>;
 }
 
+export async function deleteTask(id: string): Promise<void> {
+	const res = await fetch(`/api/tasks/${id}`, { method: "DELETE" });
+	if (!res.ok) throw new Error(`서버 오류: ${res.status}`);
+}
+
 export async function updateTask(
 	id: string,
 	fields: TaskUpdateInput,
