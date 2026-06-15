@@ -1,6 +1,6 @@
 # Seq Plan — MVP Core Flow
 생성일: 2026-06-02
-상태: 완료
+상태: 진행 중
 
 ---
 
@@ -88,3 +88,12 @@ depends_on: Chunk 5, Chunk 6
 
 - [x] #21 [3.4.1] 실시간 데이터 동기화
       depends_on: #17, #20 / blocks: 없음
+
+---
+
+## Chunk 8 — 마감일 시간 선택 (⏳ 대기)
+브랜치: feature/deadline-time-picker → dev
+depends_on: Chunk 2
+
+- [ ] #51 [1.2.4] 마감일 시간 선택 기능
+      depends_on: #3, #4 / blocks: 없음
