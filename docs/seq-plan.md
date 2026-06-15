@@ -71,13 +71,13 @@ depends_on: Chunk 4
 
 ---
 
-## Chunk 6 — 할일 상세 편집 (⏳ 대기)
+## Chunk 6 — 할일 상세 편집 (✅ 완료)
 브랜치: feature/task-detail-edit → dev
 depends_on: Chunk 4 (Chunk 5와 병렬 진행 가능)
 
 - [x] #19 [3.3.1] 할일 블록 클릭 감지
       depends_on: 없음 / blocks: #20
-- [ ] #20 [3.3.2] 세부 정보 편집 폼
+- [x] #20 [3.3.2] 세부 정보 편집 폼
       depends_on: #19 / blocks: #21
 
 ---
