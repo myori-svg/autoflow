@@ -23,8 +23,15 @@ const DEFAULT_DURATION_HOURS = 1;
 function App() {
 	const { title, deadline, setTitle, setDeadline, clearDraft } = useTaskForm();
 	const { scheduling, handleAutoSchedule } = useSchedule();
-	const { tasks, unscheduledTasks, syncStatus, addTask, moveTask, editTask } =
-		useTasks();
+	const {
+		tasks,
+		unscheduledTasks,
+		syncStatus,
+		addTask,
+		moveTask,
+		editTask,
+		removeTask,
+	} = useTasks();
 	const { selectedTask, mode, handleTaskClick, closeDetail } = useTaskDetail();
 	const [submitted, setSubmitted] = useState(false);
 
@@ -105,6 +112,15 @@ function App() {
 		}
 	};
 
+	const handleTaskDelete = async (id: string) => {
+		try {
+			await removeTask(id);
+			closeDetail();
+		} catch (err) {
+			alert(err instanceof Error ? err.message : "할일 삭제에 실패했습니다.");
+		}
+	};
+
 	return (
 		<div className="min-h-screen bg-gray-50 px-4 py-16">
 			<div className="mx-auto max-w-5xl flex flex-col gap-8">
@@ -155,6 +171,7 @@ function App() {
 					mode={mode}
 					onClose={closeDetail}
 					onSave={(fields) => handleTaskSave(selectedTask.id, fields)}
+					onDelete={() => handleTaskDelete(selectedTask.id)}
 				/>
 			)}
 

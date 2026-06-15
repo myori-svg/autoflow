@@ -24,3 +24,7 @@ export async function listTasks() {
 export async function updateTask(id: string, update: TaskUpdate) {
 	return Task.findByIdAndUpdate(id, update, { new: true });
 }
+
+export async function deleteTask(id: string) {
+	return Task.findByIdAndDelete(id);
+}

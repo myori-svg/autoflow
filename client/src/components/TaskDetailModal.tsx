@@ -7,7 +7,10 @@ type TaskDetailModalProps = {
 	mode: TaskDetailMode;
 	onClose: () => void;
 	onSave: (fields: TaskUpdateInput) => void;
+	onDelete: () => void;
 };
+
+const DELETE_CONFIRM_MESSAGE = "이 할일을 삭제하시겠습니까?";
 
 const PRIORITY_LABELS: Record<TaskPriority, string> = {
 	low: "낮음",
@@ -46,6 +49,7 @@ export function TaskDetailModal({
 	mode,
 	onClose,
 	onSave,
+	onDelete,
 }: TaskDetailModalProps) {
 	const isScheduled = !!(task.start && task.end);
 	const [editing, setEditing] = useState(mode === "edit");
@@ -91,6 +95,12 @@ export function TaskDetailModal({
 			priority,
 			...(isScheduled ? { start, end } : { deadline, estimatedHours }),
 		});
+	};
+
+	const handleDelete = () => {
+		if (confirm(DELETE_CONFIRM_MESSAGE)) {
+			onDelete();
+		}
 	};
 
 	const handleCancel = () => {
@@ -258,6 +268,13 @@ export function TaskDetailModal({
 						</>
 					) : (
 						<>
+							<button
+								type="button"
+								onClick={handleDelete}
+								className="flex-1 rounded-md bg-red-50 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-100 transition-colors"
+							>
+								삭제
+							</button>
 							<button
 								type="button"
 								onClick={onClose}

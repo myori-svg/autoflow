@@ -1,6 +1,6 @@
 # Seq Plan — MVP Core Flow
 생성일: 2026-06-02
-상태: 완료
+상태: 진행 중
 
 ---
 
@@ -121,3 +121,12 @@ depends_on: Chunk 9
 
 - [x] #55 [2.1.4] 소요시간 추정값(estimatedHours) 저장 및 편집
       depends_on: 없음 / blocks: 없음
+
+---
+
+## Chunk 11 — 할일 삭제 기능 (⬜ 진행 중)
+브랜치: feature/task-delete → dev
+depends_on: Chunk 6
+
+- [ ] #57 [3.3.3] 세부 정보 삭제 기능
+      depends_on: #20 / blocks: 없음
