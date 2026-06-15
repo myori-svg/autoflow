@@ -1,6 +1,6 @@
 # Seq Plan — MVP Core Flow
 생성일: 2026-06-02
-상태: 진행 중
+상태: 완료
 
 ---
 
@@ -115,9 +115,9 @@ depends_on: Chunk 8
 
 ---
 
-## Chunk 10 — 소요시간 추정값 영속화 (⏳ 대기)
+## Chunk 10 — 소요시간 추정값 영속화 (✅ 완료)
 브랜치: feature/estimated-hours → dev
 depends_on: Chunk 9
 
-- [ ] #55 [2.1.4] 소요시간 추정값(estimatedHours) 저장 및 편집
+- [x] #55 [2.1.4] 소요시간 추정값(estimatedHours) 저장 및 편집
       depends_on: 없음 / blocks: 없음
