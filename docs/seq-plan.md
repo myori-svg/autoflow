@@ -64,7 +64,7 @@ depends_on: Chunk 4
 
 - [x] #16 [3.2.1] 드래그 앤 드롭 감지
       depends_on: 없음 / blocks: #17
-- [ ] #17 [3.2.3] 드롭 후 변경된 일정 DB 저장
+- [x] #17 [3.2.3] 드롭 후 변경된 일정 DB 저장
       depends_on: #16 / blocks: #18, #21
 - [ ] #18 [3.2.4] 충돌 감지 및 경고
       depends_on: #17 / blocks: 없음
