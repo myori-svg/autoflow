@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { createTask, fetchTasks, updateTask } from "../api/tasks";
-import type { ScheduledTask, Task, TaskUpdateInput } from "../types";
+import type {
+	CreateTaskInput,
+	ScheduledTask,
+	Task,
+	TaskUpdateInput,
+} from "../types";
 
 export type SyncStatus = "idle" | "syncing" | "synced" | "error";
 
@@ -10,26 +15,27 @@ function toScheduledTask(task: Task): ScheduledTask {
 		title: task.title,
 		description: task.description,
 		priority: task.priority,
-		start: task.start,
-		end: task.end,
+		start: task.start as string,
+		end: task.end as string,
 	};
 }
 
 type UseTasksReturn = {
 	tasks: ScheduledTask[];
+	unscheduledTasks: Task[];
 	syncStatus: SyncStatus;
-	addTask: (title: string, start: string, end: string) => Promise<void>;
+	addTask: (input: CreateTaskInput) => Promise<void>;
 	moveTask: (id: string, start: string, end: string) => Promise<void>;
 	editTask: (id: string, fields: TaskUpdateInput) => Promise<void>;
 };
 
 export function useTasks(): UseTasksReturn {
-	const [tasks, setTasks] = useState<ScheduledTask[]>([]);
+	const [allTasks, setAllTasks] = useState<Task[]>([]);
 	const [syncStatus, setSyncStatus] = useState<SyncStatus>("idle");
 
 	useEffect(() => {
 		fetchTasks()
-			.then((data) => setTasks(data.map(toScheduledTask)))
+			.then((data) => setAllTasks(data))
 			.catch((err) => console.error(err));
 	}, []);
 
@@ -45,10 +51,10 @@ export function useTasks(): UseTasksReturn {
 	}, []);
 
 	const addTask = useCallback(
-		(title: string, start: string, end: string) =>
+		(input: CreateTaskInput) =>
 			sync(async () => {
-				const task = await createTask(title, start, end);
-				setTasks((prev) => [...prev, toScheduledTask(task)]);
+				const task = await createTask(input);
+				setAllTasks((prev) => [...prev, task]);
 			}),
 		[sync],
 	);
@@ -57,9 +63,7 @@ export function useTasks(): UseTasksReturn {
 		(id: string, start: string, end: string) =>
 			sync(async () => {
 				const task = await updateTask(id, { start, end });
-				setTasks((prev) =>
-					prev.map((t) => (t.id === task._id ? toScheduledTask(task) : t)),
-				);
+				setAllTasks((prev) => prev.map((t) => (t._id === task._id ? task : t)));
 			}),
 		[sync],
 	);
@@ -68,12 +72,14 @@ export function useTasks(): UseTasksReturn {
 		(id: string, fields: TaskUpdateInput) =>
 			sync(async () => {
 				const task = await updateTask(id, fields);
-				setTasks((prev) =>
-					prev.map((t) => (t.id === task._id ? toScheduledTask(task) : t)),
-				);
+				setAllTasks((prev) => prev.map((t) => (t._id === task._id ? task : t)));
 			}),
 		[sync],
 	);
 
-	return { tasks, syncStatus, addTask, moveTask, editTask };
+	const isScheduled = (t: Task) => !!(t.start && t.end);
+	const tasks = allTasks.filter(isScheduled).map(toScheduledTask);
+	const unscheduledTasks = allTasks.filter((t) => !isScheduled(t));
+
+	return { tasks, unscheduledTasks, syncStatus, addTask, moveTask, editTask };
 }

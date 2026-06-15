@@ -1,31 +1,60 @@
 import { useState } from "react";
 import { estimateTask } from "../api/ai";
-import type { EstimateResponse } from "../types";
+import type { ScheduledTask, Task, TaskUpdateInput } from "../types";
+import { assignSchedules, type TaskWithEstimate } from "../utils/autoSchedule";
+
+const DEFAULT_ESTIMATED_HOURS = 1;
 
 type UseScheduleReturn = {
 	scheduling: boolean;
-	result: EstimateResponse | null;
-	handleAutoSchedule: (title: string, deadline: Date) => Promise<void>;
+	handleAutoSchedule: (
+		unscheduled: Task[],
+		scheduled: ScheduledTask[],
+		onAssign: (id: string, fields: TaskUpdateInput) => Promise<void>,
+	) => Promise<void>;
 };
 
 export function useSchedule(): UseScheduleReturn {
 	const [scheduling, setScheduling] = useState(false);
-	const [result, setResult] = useState<EstimateResponse | null>(null);
 
-	const handleAutoSchedule = async (title: string, deadline: Date) => {
+	const handleAutoSchedule = async (
+		unscheduled: Task[],
+		scheduled: ScheduledTask[],
+		onAssign: (id: string, fields: TaskUpdateInput) => Promise<void>,
+	) => {
+		if (unscheduled.length === 0) {
+			alert("배치할 미배치 할일이 없습니다.");
+			return;
+		}
+
 		setScheduling(true);
 		try {
-			const data = await estimateTask(title, deadline);
-			setResult(data);
-			alert(
-				`예상 소요 시간: ${data.estimatedHours}시간\n근거: ${data.reasoning}`,
+			const withEstimates: TaskWithEstimate[] = await Promise.all(
+				unscheduled.map(async (task) => {
+					if (!task.deadline) {
+						return { ...task, estimatedHours: DEFAULT_ESTIMATED_HOURS };
+					}
+					const { estimatedHours } = await estimateTask(
+						task.title,
+						new Date(task.deadline),
+					);
+					return { ...task, estimatedHours };
+				}),
 			);
+
+			const assignments = assignSchedules(withEstimates, scheduled);
+
+			for (const { id, start, end } of assignments) {
+				await onAssign(id, { start, end });
+			}
+
+			alert(`${assignments.length}개의 할일을 캘린더에 배치했습니다.`);
 		} catch (err) {
-			alert(err instanceof Error ? err.message : "AI 추정에 실패했습니다.");
+			alert(err instanceof Error ? err.message : "자동 배분에 실패했습니다.");
 		} finally {
 			setScheduling(false);
 		}
 	};
 
-	return { scheduling, result, handleAutoSchedule };
+	return { scheduling, handleAutoSchedule };
 }

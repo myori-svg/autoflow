@@ -97,3 +97,18 @@ depends_on: Chunk 2
 
 - [x] #51 [1.2.4] 마감일 시간 선택 기능
       depends_on: #3, #4 / blocks: 없음
+
+---
+
+## Chunk 9 — AI 기반 일정 자동 배분 (아이젠하워 매트릭스) (✅ 완료)
+브랜치: feature/auto-schedule-matrix → dev
+depends_on: Chunk 8
+
+- [x] #53 [2.1.3] 할일 일정 optional화 (미배치 상태 지원)
+      depends_on: 없음 / blocks: #10, #11, #9
+- [x] #10 [2.3.1] 마감일+중요도 기반 우선순위 계산 (아이젠하워 매트릭스)
+      depends_on: #53 / blocks: #11
+- [x] #11 [2.3.2] 우선순위 기반 일정 배치
+      depends_on: #10 / blocks: #9
+- [x] #9 [2.2.2] 자동 배분 실행 로직
+      depends_on: #11 / blocks: 없음

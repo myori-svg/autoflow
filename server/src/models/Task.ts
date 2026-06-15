@@ -7,8 +7,10 @@ type TaskDocument = {
 	title: string;
 	description?: string;
 	priority: TaskPriority;
-	start: Date;
-	end: Date;
+	deadline?: Date;
+	start?: Date;
+	end?: Date;
+	scheduled: boolean;
 };
 
 const taskSchema = new Schema<TaskDocument>(
@@ -20,8 +22,10 @@ const taskSchema = new Schema<TaskDocument>(
 			enum: TASK_PRIORITIES,
 			default: "medium",
 		},
-		start: { type: Date, required: true },
-		end: { type: Date, required: true },
+		deadline: { type: Date },
+		start: { type: Date },
+		end: { type: Date },
+		scheduled: { type: Boolean, default: false },
 	},
 	{ timestamps: { createdAt: true, updatedAt: true } },
 );

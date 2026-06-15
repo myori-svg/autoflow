@@ -6,15 +6,17 @@ type ParsedTaskFields = {
 	title?: string;
 	description?: string;
 	priority?: TaskPriority;
+	deadline?: Date;
 	start?: Date;
 	end?: Date;
 };
 
 function parseTaskFields(body: unknown): ParsedTaskFields | { error: string } {
-	const { title, description, priority, start, end } = body as {
+	const { title, description, priority, deadline, start, end } = body as {
 		title?: string;
 		description?: string;
 		priority?: string;
+		deadline?: string;
 		start?: string;
 		end?: string;
 	};
@@ -29,6 +31,14 @@ function parseTaskFields(body: unknown): ParsedTaskFields | { error: string } {
 			return { error: "priority는 low, medium, high 중 하나여야 합니다." };
 		}
 		fields.priority = priority as TaskPriority;
+	}
+
+	if (deadline !== undefined) {
+		const deadlineDate = new Date(deadline);
+		if (Number.isNaN(deadlineDate.getTime())) {
+			return { error: "deadline은 유효한 날짜여야 합니다." };
+		}
+		fields.deadline = deadlineDate;
 	}
 
 	if (start !== undefined) {
@@ -61,15 +71,17 @@ export async function createTaskHandler(
 		return;
 	}
 
-	const { title, description, priority, start, end } = parsed;
+	const { title, description, priority, deadline, start, end } = parsed;
 
 	if (!title || title.trim().length === 0) {
 		res.status(400).json({ error: "할일 제목은 필수입니다." });
 		return;
 	}
 
-	if (!start || !end) {
-		res.status(400).json({ error: "start와 end는 필수입니다." });
+	if (!(start && end) && !deadline) {
+		res
+			.status(400)
+			.json({ error: "deadline 또는 start/end 중 하나는 필수입니다." });
 		return;
 	}
 
@@ -78,8 +90,10 @@ export async function createTaskHandler(
 			title: title.trim(),
 			description,
 			priority,
+			deadline,
 			start,
 			end,
+			scheduled: !!(start && end),
 		});
 		res.status(201).json(task);
 	} catch (err) {
@@ -122,6 +136,7 @@ export async function updateTaskHandler(
 		const task = await updateTask(id, {
 			...parsed,
 			title: parsed.title?.trim(),
+			...(parsed.start && parsed.end ? { scheduled: true } : {}),
 		});
 		if (!task) {
 			res.status(404).json({ error: "해당 할일을 찾을 수 없습니다." });

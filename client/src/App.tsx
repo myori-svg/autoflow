@@ -5,6 +5,7 @@ import { DatePicker } from "./components/DatePicker";
 import { SyncStatusIndicator } from "./components/SyncStatusIndicator";
 import { TaskDetailModal } from "./components/TaskDetailModal";
 import { TaskInput } from "./components/TaskInput";
+import { UnscheduledTaskList } from "./components/UnscheduledTaskList";
 import { WeekCalendar } from "./components/WeekCalendar";
 import { useSchedule } from "./hooks/useSchedule";
 import { useTaskDetail } from "./hooks/useTaskDetail";
@@ -22,7 +23,8 @@ const DEFAULT_DURATION_HOURS = 1;
 function App() {
 	const { title, deadline, setTitle, setDeadline, clearDraft } = useTaskForm();
 	const { scheduling, handleAutoSchedule } = useSchedule();
-	const { tasks, syncStatus, addTask, moveTask, editTask } = useTasks();
+	const { tasks, unscheduledTasks, syncStatus, addTask, moveTask, editTask } =
+		useTasks();
 	const { selectedTask, mode, handleTaskClick, closeDetail } = useTaskDetail();
 	const [submitted, setSubmitted] = useState(false);
 
@@ -37,19 +39,14 @@ function App() {
 		e.preventDefault();
 		setSubmitted(true);
 		if (!title.trim() || !deadline) return;
-		const start = new Date(
-			deadline.getTime() - DEFAULT_DURATION_HOURS * 60 * 60 * 1000,
-		);
 		try {
-			await addTask(title.trim(), start.toISOString(), deadline.toISOString());
+			await addTask({ title: title.trim(), deadline: deadline.toISOString() });
 			clearDraft();
 			setSubmitted(false);
 		} catch (err) {
 			alert(err instanceof Error ? err.message : "할일 추가에 실패했습니다.");
 		}
 	};
-
-	const canAutoSchedule = title.trim().length > 0 && !!deadline;
 
 	const draftTask: ScheduledTask | null = useMemo(() => {
 		if (!title.trim() || !deadline) return null;
@@ -122,14 +119,6 @@ function App() {
 							error={deadlineError}
 							touched={submitted}
 						/>
-						<AutoScheduleButton
-							disabled={!canAutoSchedule}
-							loading={scheduling}
-							onClick={() => {
-								if (title.trim() && deadline)
-									handleAutoSchedule(title.trim(), deadline);
-							}}
-						/>
 						<button
 							type="submit"
 							className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
@@ -138,6 +127,19 @@ function App() {
 						</button>
 					</form>
 				</div>
+
+				{unscheduledTasks.length > 0 && (
+					<div className="w-full max-w-md flex flex-col gap-4">
+						<UnscheduledTaskList tasks={unscheduledTasks} />
+						<AutoScheduleButton
+							disabled={unscheduledTasks.length === 0}
+							loading={scheduling}
+							onClick={() => {
+								handleAutoSchedule(unscheduledTasks, tasks, editTask);
+							}}
+						/>
+					</div>
+				)}
 
 				<WeekCalendar
 					events={events}
