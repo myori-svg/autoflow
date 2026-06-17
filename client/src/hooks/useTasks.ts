@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { estimateTask } from "../api/ai";
 import { createTask, deleteTask, fetchTasks, updateTask } from "../api/tasks";
 import type {
@@ -38,8 +38,6 @@ export function useTasks(): UseTasksReturn {
 	const [allTasks, setAllTasks] = useState<Task[]>([]);
 	const [unscheduledOrder, setUnscheduledOrder] = useState<string[]>([]);
 	const [syncStatus, setSyncStatus] = useState<SyncStatus>("idle");
-	const allTasksRef = useRef<Task[]>(allTasks);
-	allTasksRef.current = allTasks;
 
 	useEffect(() => {
 		fetchTasks()
@@ -60,14 +58,14 @@ export function useTasks(): UseTasksReturn {
 
 	const placeOnCalendar = useCallback(
 		async (taskId: string, estimatedHours: number, workHours: WorkHours) => {
-			const existing = allTasksRef.current
+			const existing = allTasks
 				.filter((t) => t._id !== taskId && !!(t.start && t.end))
 				.map(toScheduledTask);
 			const slot = findAvailableSlot(estimatedHours, existing, new Date(), workHours);
 			const updated = await updateTask(taskId, slot);
 			setAllTasks((prev) => prev.map((t) => (t._id === updated._id ? updated : t)));
 		},
-		[],
+		[allTasks],
 	);
 
 	const addTask = useCallback(
