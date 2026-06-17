@@ -1,6 +1,12 @@
 import type { Request, Response } from "express";
 import { TASK_PRIORITIES, type TaskPriority } from "../models/Task";
-import { createTask, deleteTask, listTasks, updateTask } from "../services/task";
+import {
+	createTask,
+	deleteTask,
+	listTasks,
+	unscheduleTask,
+	updateTask,
+} from "../services/task";
 
 type ParsedTaskFields = {
 	title?: string;
@@ -142,6 +148,25 @@ export async function updateTaskHandler(
 	req: Request,
 	res: Response,
 ): Promise<void> {
+	const id = String(req.params.id);
+	const { unschedule } = req.body as { unschedule?: boolean };
+
+	if (unschedule === true) {
+		try {
+			const task = await unscheduleTask(id);
+			if (!task) {
+				res.status(404).json({ error: "해당 할일을 찾을 수 없습니다." });
+				return;
+			}
+			res.json(task);
+			return;
+		} catch (err) {
+			const message = err instanceof Error ? err.message : "알 수 없는 오류";
+			res.status(500).json({ error: `일정 수정 실패: ${message}` });
+			return;
+		}
+	}
+
 	const parsed = parseTaskFields(req.body);
 
 	if ("error" in parsed) {
@@ -155,7 +180,6 @@ export async function updateTaskHandler(
 	}
 
 	try {
-		const id = String(req.params.id);
 		const task = await updateTask(id, {
 			...parsed,
 			title: parsed.title?.trim(),

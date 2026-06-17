@@ -29,10 +29,12 @@ type UseTasksReturn = {
 	moveTask: (id: string, start: string, end: string) => Promise<void>;
 	editTask: (id: string, fields: TaskUpdateInput) => Promise<void>;
 	removeTask: (id: string) => Promise<void>;
+	unscheduleTask: (id: string, index: number) => Promise<void>;
 };
 
 export function useTasks(): UseTasksReturn {
 	const [allTasks, setAllTasks] = useState<Task[]>([]);
+	const [unscheduledOrder, setUnscheduledOrder] = useState<string[]>([]);
 	const [syncStatus, setSyncStatus] = useState<SyncStatus>("idle");
 
 	useEffect(() => {
@@ -101,9 +103,34 @@ export function useTasks(): UseTasksReturn {
 		[sync],
 	);
 
+	const unscheduleTask = useCallback(
+		(id: string, index: number) =>
+			sync(async () => {
+				const task = await updateTask(id, { unschedule: true });
+				setAllTasks((prev) => prev.map((t) => (t._id === task._id ? task : t)));
+				setUnscheduledOrder((prev) => {
+					const withoutId = prev.filter((existingId) => existingId !== id);
+					return [...withoutId.slice(0, index), id, ...withoutId.slice(index)];
+				});
+			}),
+		[sync],
+	);
+
 	const isScheduled = (t: Task) => !!(t.start && t.end);
 	const tasks = allTasks.filter(isScheduled).map(toScheduledTask);
-	const unscheduledTasks = allTasks.filter((t) => !isScheduled(t));
+	const unscheduledRaw = allTasks.filter((t) => !isScheduled(t));
+
+	const orderedIds = [
+		...unscheduledOrder.filter((id) =>
+			unscheduledRaw.some((t) => t._id === id),
+		),
+		...unscheduledRaw
+			.filter((t) => !unscheduledOrder.includes(t._id))
+			.map((t) => t._id),
+	];
+	const unscheduledTasks = orderedIds
+		.map((id) => unscheduledRaw.find((t) => t._id === id))
+		.filter((t): t is Task => !!t);
 
 	return {
 		tasks,
@@ -113,5 +140,6 @@ export function useTasks(): UseTasksReturn {
 		moveTask,
 		editTask,
 		removeTask,
+		unscheduleTask,
 	};
 }
