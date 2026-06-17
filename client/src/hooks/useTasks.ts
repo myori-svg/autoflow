@@ -76,11 +76,13 @@ export function useTasks(): UseTasksReturn {
 				const task = await createTask(input);
 				setAllTasks((prev) => [...prev, task]);
 
+				if (!input.deadline) return;
+
 				// 우선 기본 소요시간(또는 입력된 추정치)으로 즉시 캘린더에 배치하고,
 				// AI 추정이 끝나면 실제 소요시간으로 다시 배치해 정확도를 보정한다.
 				await placeOnCalendar(task._id, task.estimatedHours ?? 1, workHours);
 
-				if (task.estimatedHours === undefined && input.deadline) {
+				if (task.estimatedHours === undefined) {
 					estimateTask(input.title, new Date(input.deadline))
 						.then(async ({ estimatedHours }) => {
 							await updateTask(task._id, { estimatedHours });
