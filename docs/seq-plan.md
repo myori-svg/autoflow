@@ -124,9 +124,25 @@ depends_on: Chunk 9
 
 ---
 
-## Chunk 11 — 할일 삭제 기능 (⬜ 진행 중)
+## Chunk 11 — 할일 삭제 기능 (✅ 완료)
 브랜치: feature/task-delete → dev
 depends_on: Chunk 6
 
-- [ ] #57 [3.3.3] 세부 정보 삭제 기능
+- [x] #57 [3.3.3] 세부 정보 삭제 기능
       depends_on: #20 / blocks: 없음
+
+---
+
+## Chunk 12 — UX 폴리싱 및 근무시간 설정 (✅ 완료, 소급 등록)
+브랜치: feature/ux-polish-work-hours → dev
+depends_on: Chunk 9, Chunk 11
+note: 이슈 등록 없이 먼저 구현 후 소급 등록함
+
+- [x] #59 캘린더/전체 UI 폴리싱
+      depends_on: 없음 / blocks: 없음
+- [x] #60 토스트 알림 시스템 도입
+      depends_on: 없음 / blocks: 없음
+- [x] #61 캘린더 ↔ 미배치 할일 양방향 드래그앤드롭
+      depends_on: #57 / blocks: 없음
+- [x] #62 근무시간 설정 및 요일별 휴무 지정
+      depends_on: 없음 / blocks: 없음

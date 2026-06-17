@@ -28,3 +28,11 @@ export async function updateTask(id: string, update: TaskUpdate) {
 export async function deleteTask(id: string) {
 	return Task.findByIdAndDelete(id);
 }
+
+export async function unscheduleTask(id: string) {
+	return Task.findByIdAndUpdate(
+		id,
+		{ $unset: { start: "", end: "" }, $set: { scheduled: false } },
+		{ new: true },
+	);
+}
