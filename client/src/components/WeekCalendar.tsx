@@ -1,6 +1,5 @@
 import type { EventClickArg, EventDropArg } from "@fullcalendar/core";
 import interactionPlugin, {
-	type EventDragStartArg,
 	type EventDragStopArg,
 	type EventReceiveArg,
 } from "@fullcalendar/interaction";
@@ -79,7 +78,7 @@ export function WeekCalendar({
 		event.remove();
 	};
 
-	const handleEventDragStart = (_info: EventDragStartArg) => {
+	const handleEventDragStart = () => {
 		const handler = (e: PointerEvent) => {
 			const zone = unscheduleDropZoneRef.current;
 			const index = zone ? computeDropIndex(e.clientX, e.clientY, zone) : null;
