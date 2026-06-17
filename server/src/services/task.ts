@@ -32,7 +32,10 @@ export async function deleteTask(id: string) {
 export async function unscheduleTask(id: string) {
 	return Task.findByIdAndUpdate(
 		id,
-		{ $unset: { start: "", end: "" }, $set: { scheduled: false } },
+		{
+			$unset: { start: "", end: "", deadline: "" },
+			$set: { scheduled: false },
+		},
 		{ new: true },
 	);
 }

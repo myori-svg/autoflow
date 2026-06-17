@@ -82,7 +82,8 @@ export function WorkHoursSettings({
 									: "bg-blue-50 text-blue-600",
 							].join(" ")}
 						>
-							{dayLabel(o.day)} {o.enabled === false ? "휴무" : `${o.start}~${o.end}`}
+							{dayLabel(o.day)}{" "}
+							{o.enabled === false ? "휴무" : `${o.start}~${o.end}`}
 						</span>
 					))}
 				</div>

@@ -1,5 +1,5 @@
 import type { EventClickArg, EventDropArg } from "@fullcalendar/core";
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { AutoScheduleButton } from "./components/AutoScheduleButton";
 import { DatePicker } from "./components/DatePicker";
 import { SyncStatusIndicator } from "./components/SyncStatusIndicator";
@@ -15,14 +15,11 @@ import { useTaskForm } from "./hooks/useTaskForm";
 import { useTasks } from "./hooks/useTasks";
 import { useToast } from "./hooks/useToast";
 import { useWorkHours } from "./hooks/useWorkHours";
-import type { ScheduledTask, TaskUpdateInput } from "./types";
+import type { TaskUpdateInput } from "./types";
 import { hasConflict } from "./utils/schedule";
 
 const CONFLICT_WARNING_MESSAGE =
 	"기존 일정과 시간이 겹칩니다. 그래도 이동하시겠습니까?";
-
-const DRAFT_TASK_ID = "draft";
-const DEFAULT_DURATION_HOURS = 1;
 
 function toFriendlyError(err: unknown): string {
 	const msg = err instanceof Error ? err.message : "";
@@ -71,10 +68,13 @@ function App() {
 		setSubmitted(true);
 		if (!title.trim()) return;
 		try {
-			await addTask({
-				title: title.trim(),
-				...(deadline ? { deadline: deadline.toISOString() } : {}),
-			});
+			await addTask(
+				{
+					title: title.trim(),
+					...(deadline ? { deadline: deadline.toISOString() } : {}),
+				},
+				workHours,
+			);
 			clearDraft();
 			setSubmitted(false);
 		} catch (err) {
@@ -82,26 +82,11 @@ function App() {
 		}
 	};
 
-	const draftTask: ScheduledTask | null = useMemo(() => {
-		if (!title.trim() || !deadline) return null;
-		const start = new Date(
-			deadline.getTime() - DEFAULT_DURATION_HOURS * 60 * 60 * 1000,
-		);
-		return {
-			id: DRAFT_TASK_ID,
-			title: title.trim(),
-			priority: "medium",
-			start: start.toISOString(),
-			end: deadline.toISOString(),
-		};
-	}, [title, deadline]);
-
-	const events = draftTask ? [...tasks, draftTask] : tasks;
+	const events = tasks;
 
 	const handleEventDrop = (arg: EventDropArg) => {
 		const { event } = arg;
 		if (!event.start || !event.end) return;
-		if (event.id === DRAFT_TASK_ID) return;
 
 		const start = event.start.toISOString();
 		const end = event.end.toISOString();
@@ -121,8 +106,6 @@ function App() {
 
 	const handleEventClick = (arg: EventClickArg) => {
 		const { event } = arg;
-		if (event.id === DRAFT_TASK_ID) return;
-
 		const task = tasks.find((t) => t.id === event.id);
 		if (!task) return;
 
@@ -163,7 +146,6 @@ function App() {
 	};
 
 	const handleUnschedule = async (id: string, index: number) => {
-		if (id === DRAFT_TASK_ID) return;
 		try {
 			await unscheduleTask(id, index);
 		} catch (err) {

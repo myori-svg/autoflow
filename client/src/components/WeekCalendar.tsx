@@ -60,6 +60,7 @@ export function WeekCalendar({
 }: WeekCalendarProps) {
 	const dropIndexRef = useRef<number | null>(null);
 	const moveHandlerRef = useRef<((e: PointerEvent) => void) | null>(null);
+	const eventDroppedRef = useRef(false);
 
 	const coloredEvents = events.map(({ id, title, start, end, priority }) => ({
 		id,
@@ -78,7 +79,13 @@ export function WeekCalendar({
 		event.remove();
 	};
 
+	const handleEventDrop = (arg: EventDropArg) => {
+		eventDroppedRef.current = true;
+		onEventDrop(arg);
+	};
+
 	const handleEventDragStart = () => {
+		eventDroppedRef.current = false;
 		const handler = (e: PointerEvent) => {
 			const zone = unscheduleDropZoneRef.current;
 			const index = zone ? computeDropIndex(e.clientX, e.clientY, zone) : null;
@@ -96,11 +103,18 @@ export function WeekCalendar({
 			document.removeEventListener("pointermove", moveHandlerRef.current);
 			moveHandlerRef.current = null;
 		}
-		if (dropIndexRef.current !== null) {
-			onUnschedule(info.event.id, dropIndexRef.current);
-		}
+		const taskId = info.event.id;
+		const dropIndex = dropIndexRef.current;
 		dropIndexRef.current = null;
 		onDragHoverChange(null);
+		// eventDragStop fires BEFORE eventDrop in FullCalendar's lifecycle, so defer
+		// to a microtask to let a valid in-calendar drop (handleEventDrop) flip
+		// eventDroppedRef first; otherwise a real reschedule would also unschedule.
+		queueMicrotask(() => {
+			if (!eventDroppedRef.current && dropIndex !== null) {
+				onUnschedule(taskId, dropIndex);
+			}
+		});
 	};
 
 	return (
@@ -135,7 +149,7 @@ export function WeekCalendar({
 				eventDurationEditable={false}
 				longPressDelay={200}
 				dragRevertDuration={0}
-				eventDrop={onEventDrop}
+				eventDrop={handleEventDrop}
 				eventClick={onEventClick}
 				eventReceive={handleEventReceive}
 				eventDragStart={handleEventDragStart}

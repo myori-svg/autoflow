@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { estimateTask } from "../api/ai";
 import { createTask, deleteTask, fetchTasks, updateTask } from "../api/tasks";
 import type {
@@ -6,7 +6,9 @@ import type {
 	ScheduledTask,
 	Task,
 	TaskUpdateInput,
+	WorkHours,
 } from "../types";
+import { findAvailableSlot } from "../utils/autoSchedule";
 
 export type SyncStatus = "idle" | "syncing" | "synced" | "error";
 
@@ -25,7 +27,7 @@ type UseTasksReturn = {
 	tasks: ScheduledTask[];
 	unscheduledTasks: Task[];
 	syncStatus: SyncStatus;
-	addTask: (input: CreateTaskInput) => Promise<void>;
+	addTask: (input: CreateTaskInput, workHours: WorkHours) => Promise<void>;
 	moveTask: (id: string, start: string, end: string) => Promise<void>;
 	editTask: (id: string, fields: TaskUpdateInput) => Promise<void>;
 	removeTask: (id: string) => Promise<void>;
@@ -36,6 +38,8 @@ export function useTasks(): UseTasksReturn {
 	const [allTasks, setAllTasks] = useState<Task[]>([]);
 	const [unscheduledOrder, setUnscheduledOrder] = useState<string[]>([]);
 	const [syncStatus, setSyncStatus] = useState<SyncStatus>("idle");
+	const allTasksRef = useRef<Task[]>(allTasks);
+	allTasksRef.current = allTasks;
 
 	useEffect(() => {
 		fetchTasks()
@@ -54,26 +58,38 @@ export function useTasks(): UseTasksReturn {
 		}
 	}, []);
 
-	const addTask = useCallback(
-		(input: CreateTaskInput) =>
-			sync(async () => {
-				let estimatedHours = input.estimatedHours;
-				if (estimatedHours === undefined && input.deadline) {
-					try {
-						const estimate = await estimateTask(
-							input.title,
-							new Date(input.deadline),
-						);
-						estimatedHours = estimate.estimatedHours;
-					} catch (err) {
-						console.error("소요 시간 추정 실패", err);
-					}
-				}
+	const placeOnCalendar = useCallback(
+		async (taskId: string, estimatedHours: number, workHours: WorkHours) => {
+			const existing = allTasksRef.current
+				.filter((t) => t._id !== taskId && !!(t.start && t.end))
+				.map(toScheduledTask);
+			const slot = findAvailableSlot(estimatedHours, existing, new Date(), workHours);
+			const updated = await updateTask(taskId, slot);
+			setAllTasks((prev) => prev.map((t) => (t._id === updated._id ? updated : t)));
+		},
+		[],
+	);
 
-				const task = await createTask({ ...input, estimatedHours });
+	const addTask = useCallback(
+		(input: CreateTaskInput, workHours: WorkHours) =>
+			sync(async () => {
+				const task = await createTask(input);
 				setAllTasks((prev) => [...prev, task]);
+
+				// 우선 기본 소요시간(또는 입력된 추정치)으로 즉시 캘린더에 배치하고,
+				// AI 추정이 끝나면 실제 소요시간으로 다시 배치해 정확도를 보정한다.
+				await placeOnCalendar(task._id, task.estimatedHours ?? 1, workHours);
+
+				if (task.estimatedHours === undefined && input.deadline) {
+					estimateTask(input.title, new Date(input.deadline))
+						.then(async ({ estimatedHours }) => {
+							await updateTask(task._id, { estimatedHours });
+							await placeOnCalendar(task._id, estimatedHours, workHours);
+						})
+						.catch((err) => console.error("소요 시간 추정 실패", err));
+				}
 			}),
-		[sync],
+		[sync, placeOnCalendar],
 	);
 
 	const moveTask = useCallback(
