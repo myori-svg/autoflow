@@ -13,6 +13,34 @@
 
 ## 실행 절차
 
+### Step 0 — seq-plan.md 확인 (자동)
+`docs/seq-plan.md` 읽기.
+- 있으면 → 각 이슈의 depends_on / blocks / recommends 파싱해서 이슈 생성 시 본문에 삽입
+- 없으면 → 기능명세서 레이어 순서로 의존성 기본 추정 (UI → 저장 → API 순서)
+
+이슈 본문 형식:
+```bash
+gh issue create \
+  --title "[x.x.x] 기능명" \
+  --body "## 수용 기준
+- [ ] 항목1
+- [ ] 항목2
+
+## 의존성
+depends_on: #1, #2
+blocks: #5
+recommends: #3" \
+  --milestone "그룹명"
+```
+
+의존성 없으면:
+```
+## 의존성
+depends_on: 없음
+```
+
+---
+
 ### Step 1 — 기능명세서 읽기
 
 `@docs/기능명세서.md` 파일을 읽어.
